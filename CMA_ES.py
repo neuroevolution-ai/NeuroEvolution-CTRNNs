@@ -12,13 +12,13 @@ from deap import base
 from deap import creator
 from deap import tools
 from deap import cma
-# from scoop import futures
+from scoop import futures
 
 # https://github.com/hardmaru/estool/blob/master/config.py
 
 # Fully connected neural network with one hidden layer
 class NeuralNet(nn.Module):
-    def __init__(self, input_size, hidden_size1, hidden_size2, output_size, individual):
+    def __init__(self, input_size, hidden_size1, hidden_size2, output_size, individual, indirect_encoding=False):
         super(NeuralNet, self).__init__()
         self.fc1 = nn.Linear(input_size, hidden_size1)
         self.tanh1 = nn.Tanh()
@@ -27,7 +27,12 @@ class NeuralNet(nn.Module):
         self.fc3 = nn.Linear(hidden_size2, output_size)
         self.tanh3 = nn.Tanh()
 
-        self.W1, self.W2, self.W3 = self._get_weight_matrizes(individual)
+        self.input_size = input_size
+        self.hidden_size1 = hidden_size1
+        self.hidden_size2 = hidden_size2
+        self.output_size = output_size
+
+        self.W1, self.W2, self.W3 = self._set_weight_matrizes(individual, indirect_encoding)
         self.fc1.weight.data = torch.from_numpy(self.W1)
         self.fc2.weight.data = torch.from_numpy(self.W2)
         self.fc3.weight.data = torch.from_numpy(self.W3)
@@ -49,24 +54,43 @@ class NeuralNet(nn.Module):
 
         return output_np
 
-    def _get_weight_matrizes(self, individual):
+    def _set_weight_matrizes(self, individual, indirect_encoding):
 
-        W1_size = input_size*hidden_size1
-        W2_size = hidden_size1*hidden_size2
+        W1_size = self.input_size*self.hidden_size1
+        W2_size = self.hidden_size1*self.hidden_size2
         # W3_size = hidden_size2*output_size
 
-        W1 = np.array([[float(element)] for element in individual[0:W1_size]], dtype=np.single)
-        W2 = np.array([[float(element)] for element in individual[W1_size:W1_size+W2_size]], dtype=np.single)
-        W3 = np.array([[float(element)] for element in individual[W1_size+W2_size:]], dtype=np.single)
+        # indirect encoding
+        if indirect_encoding:
+            cppn = NeuralNet(4, cppn_hidden_size1, cppn_hidden_size2, 1, individual, indirect_encoding=False)
 
-        W1 = W1.reshape([hidden_size1, input_size])
-        W2 = W2.reshape([hidden_size2, hidden_size1])
-        W3 = W3.reshape([output_size, hidden_size2])
+            W1 = np.zeros((self.hidden_size1, self.input_size), dtype=np.single)
+            W2 = np.zeros((self.hidden_size2, self.hidden_size1), dtype=np.single)
+            W3 = np.zeros((self.output_size, self.hidden_size2), dtype=np.single)
+
+            for i, j in np.ndindex(W1.shape):
+                temp = np.array([i/(self.hidden_size1-1),0.33,j/(self.input_size-1),0])
+                W1[i, j] = cppn.get_action(temp)
+
+            for i, j in np.ndindex(W2.shape):
+                W2[i, j] = cppn.get_action(np.array([i/(self.hidden_size2-1),0.66,j/(self.hidden_size1-1),0.33]))
+
+            for i, j in np.ndindex(W3.shape):
+                W3[i, j] = cppn.get_action(np.array([i/(self.output_size-1),1.0,j/(self.hidden_size2-1),0.66]))
+
+        else:
+            W1 = np.array([[float(element)] for element in individual[0:W1_size]], dtype=np.single)
+            W2 = np.array([[float(element)] for element in individual[W1_size:W1_size+W2_size]], dtype=np.single)
+            W3 = np.array([[float(element)] for element in individual[W1_size+W2_size:]], dtype=np.single)
+
+            W1 = W1.reshape([self.hidden_size1, self.input_size])
+            W2 = W2.reshape([self.hidden_size2, self.hidden_size1])
+            W3 = W3.reshape([self.output_size, self.hidden_size2])
 
         # Normalize
-        # W1 = (W1 - W1.mean()) / W1.std()
-        W2 = (W2 - W2.mean()) / W2.std()
-        # W3 = (W3 - W3.mean()) / W3.std()
+        W1 = (W1 - W1.mean()) / max(W1.std(), 0.1)
+        W2 = (W2 - W2.mean()) / max(W2.std(), 0.1)
+        W3 = (W3 - W3.mean()) / max(W3.std(), 0.1)
 
         return W1, W2, W3
 
@@ -76,10 +100,12 @@ class NeuralNet(nn.Module):
 
 def evalFitness(individual):
 
-    model = NeuralNet(input_size, hidden_size1, hidden_size2, output_size, individual)
+    model = NeuralNet(input_size, hidden_size1, hidden_size2, output_size, individual, indirect_encoding=True)
+
+    env2 = gym.make('Ant-v2')
 
     fitness_current = 0
-    ob = env.reset()
+    ob = env2.reset()
     done = False
 
     # This does not work with multiprocessing
@@ -88,7 +114,7 @@ def evalFitness(individual):
     # Test fitness through simulation
     while not done:
         action = model.get_action(ob)
-        ob, rew, done, info = env.step(action)
+        ob, rew, done, info = env2.step(action)
         number_steps = number_steps + 1
         fitness_current += rew
 
@@ -100,17 +126,20 @@ def evalFitness(individual):
 # env = gym.make("CartPoleBulletEnv-v1")
 # env = gym.make("Walker2DBulletEnv-v0")
 # env = gym.make("InvertedPendulumSwingupBulletEnv-v0")
-env = gym.make('Walker2d-v2')
-
+env = gym.make('Ant-v2')
 
 # Hyper-parameters
 input_size = env.observation_space.shape[0]
-hidden_size1 = 32
-hidden_size2 = 16
+hidden_size1 = 128
+hidden_size2 = 64
 output_size = env.action_space.shape[0]
 
+cppn_hidden_size1 = 64
+cppn_hidden_size2 = 32
+
 # Size of Individual
-IND_SIZE=input_size*hidden_size1+hidden_size1*hidden_size2+hidden_size2*output_size
+#IND_SIZE=input_size*hidden_size1+hidden_size1*hidden_size2+hidden_size2*output_size
+IND_SIZE=4*cppn_hidden_size1+cppn_hidden_size1*cppn_hidden_size2+cppn_hidden_size2*1
 
 print(IND_SIZE)
 
@@ -120,18 +149,17 @@ creator.create("Individual", list, typecode='b', fitness=creator.FitnessMax)
 toolbox = base.Toolbox()
 
 # Multiprocessing
-# toolbox.register("map", futures.map)
+toolbox.register("map", futures.map)
 toolbox.register("evaluate", evalFitness)
 
-strategy = cma.Strategy(centroid=[0.0] * IND_SIZE, sigma=5.0, lambda_= 500)
-# strategy = cma.Strategy(centroid=[0.0] * IND_SIZE, sigma=5.0)
+# strategy = cma.Strategy(centroid=[0.0] * IND_SIZE, sigma=5.0, lambda_= 200)
+strategy = cma.Strategy(centroid=[0.0] * IND_SIZE, sigma=5.0)
 toolbox.register("generate", strategy.generate, creator.Individual)
 toolbox.register("update", strategy.update)
 
 number_steps = 0
 
 if __name__ == "__main__":
-    # random.seed(64)
 
     startTime = time.time()
 
@@ -142,11 +170,11 @@ if __name__ == "__main__":
     stats.register("min", np.min)
     stats.register("max", np.max)
 
-    pop, log = algorithms.eaGenerateUpdate(toolbox, ngen=1500, stats=stats, halloffame=hof)
+    pop, log = algorithms.eaGenerateUpdate(toolbox, ngen=2000, stats=stats, halloffame=hof)
 
     best_individual = hof[0]
 
-    best_model = NeuralNet(input_size, hidden_size1, hidden_size2, output_size, best_individual)
+    best_model = NeuralNet(input_size, hidden_size1, hidden_size2, output_size, best_individual, indirect_encoding=True)
     W1, W2, W3 = best_model.get_weight_matrizes()
 
     # Save weights of hof individual
