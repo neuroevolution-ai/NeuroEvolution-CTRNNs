@@ -1,0 +1,21 @@
+import gym
+import time
+
+env = gym.make('Ant-v2')
+env.reset()
+
+print(env.observation_space)
+print(env.action_space)
+
+done = False
+fitness = 0
+while not done:
+    ob, rew, done, info = env.step(env.action_space.sample()) # take a random action
+    env.render()
+    fitness += rew
+    print(rew)
+    #print(done)
+    time.sleep(0.100)
+
+print(fitness)
+env.close()
