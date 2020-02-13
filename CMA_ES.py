@@ -102,10 +102,8 @@ def evalFitness(individual):
 
     model = NeuralNet(input_size, hidden_size1, hidden_size2, output_size, individual, indirect_encoding=True)
 
-    env2 = gym.make('Ant-v2')
-
     fitness_current = 0
-    ob = env2.reset()
+    ob = env.reset()
     done = False
 
     # This does not work with multiprocessing
@@ -114,7 +112,7 @@ def evalFitness(individual):
     # Test fitness through simulation
     while not done:
         action = model.get_action(ob)
-        ob, rew, done, info = env2.step(action)
+        ob, rew, done, info = env.step(action)
         number_steps = number_steps + 1
         fitness_current += rew
 
@@ -126,20 +124,20 @@ def evalFitness(individual):
 # env = gym.make("CartPoleBulletEnv-v1")
 # env = gym.make("Walker2DBulletEnv-v0")
 # env = gym.make("InvertedPendulumSwingupBulletEnv-v0")
-env = gym.make('Ant-v2')
+env = gym.make('HalfCheetah-v2')
 
 # Hyper-parameters
 input_size = env.observation_space.shape[0]
-hidden_size1 = 128
-hidden_size2 = 64
+hidden_size1 = 32
+hidden_size2 = 8
 output_size = env.action_space.shape[0]
 
-cppn_hidden_size1 = 64
-cppn_hidden_size2 = 32
+cppn_hidden_size1 = 12
+cppn_hidden_size2 = 6
 
 # Size of Individual
-#IND_SIZE=input_size*hidden_size1+hidden_size1*hidden_size2+hidden_size2*output_size
-IND_SIZE=4*cppn_hidden_size1+cppn_hidden_size1*cppn_hidden_size2+cppn_hidden_size2*1
+IND_SIZE=input_size*hidden_size1+hidden_size1*hidden_size2+hidden_size2*output_size
+#IND_SIZE=4*cppn_hidden_size1+cppn_hidden_size1*cppn_hidden_size2+cppn_hidden_size2*1
 
 print(IND_SIZE)
 
@@ -152,8 +150,8 @@ toolbox = base.Toolbox()
 toolbox.register("map", futures.map)
 toolbox.register("evaluate", evalFitness)
 
-# strategy = cma.Strategy(centroid=[0.0] * IND_SIZE, sigma=5.0, lambda_= 200)
-strategy = cma.Strategy(centroid=[0.0] * IND_SIZE, sigma=5.0)
+strategy = cma.Strategy(centroid=[0.0] * IND_SIZE, sigma=1.0, lambda_= 200)
+# strategy = cma.Strategy(centroid=[0.0] * IND_SIZE, sigma=5.0)
 toolbox.register("generate", strategy.generate, creator.Individual)
 toolbox.register("update", strategy.update)
 
@@ -174,7 +172,7 @@ if __name__ == "__main__":
 
     best_individual = hof[0]
 
-    best_model = NeuralNet(input_size, hidden_size1, hidden_size2, output_size, best_individual, indirect_encoding=True)
+    best_model = NeuralNet(input_size, hidden_size1, hidden_size2, output_size, best_individual, indirect_encoding=False)
     W1, W2, W3 = best_model.get_weight_matrizes()
 
     # Save weights of hof individual
