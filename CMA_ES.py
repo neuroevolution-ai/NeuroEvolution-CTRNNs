@@ -37,9 +37,6 @@ class NeuralNet(nn.Module):
         self.fc1.weight.data = torch.from_numpy(self.W1)
         self.fc2.weight.data = torch.from_numpy(self.W2)
         self.fc3.weight.data = torch.from_numpy(self.W3)
-        #self.fc1.bias.data = torch.from_numpy(self.B1)
-        #self.fc2.bias.data = torch.from_numpy(self.B2)
-        #self.fc3.bias.data = torch.from_numpy(self.B3)
 
     def forward(self, x):
         out = self.fc1(x)
@@ -81,21 +78,6 @@ class NeuralNet(nn.Module):
 
             for i, j in np.ndindex(self.W3.shape):
                 self.W3[i, j] = cppn_weights.get_action(np.array([i/(self.output_size-1),1.0,j/(self.hidden_size2-1),0.66]))
-
-            # cppn_biases = NeuralNet(2, cppn_hidden_size1, cppn_hidden_size2, 1, individual[cppn_weights_size:], indirect_encoding=False)
-            #
-            # self.B1 = np.zeros(self.hidden_size1, dtype=np.single)
-            # self.B2 = np.zeros(self.hidden_size2, dtype=np.single)
-            # self.B3 = np.zeros(self.output_size, dtype=np.single)
-            #
-            # for i in range(self.hidden_size1):
-            #     self.B1[i] = cppn_biases.get_action(np.array([i / (self.hidden_size1 - 1), 0.33]))
-            #
-            # for i in range(self.hidden_size2):
-            #     self.B2[i] = cppn_biases.get_action(np.array([i / (self.hidden_size2 - 1), 0.66]))
-            #
-            # for i in range(self.output_size):
-            #     self.B3[i] = cppn_biases.get_action(np.array([i / (self.output_size - 1), 1.0]))
 
         # Direct encoding
         else:
@@ -152,23 +134,22 @@ def evalFitness(individual):
 # env = gym.make("CartPoleBulletEnv-v1")
 # env = gym.make("Walker2DBulletEnv-v0")
 # env = gym.make("InvertedPendulumSwingupBulletEnv-v0")
-env = gym.make('HalfCheetah-v2')
+env = gym.make('Ant-v2')
 
 # Hyper-parameters
 input_size = env.observation_space.shape[0]
-hidden_size1 = 32
-hidden_size2 = 8
+hidden_size1 = 256
+hidden_size2 = 128
 output_size = env.action_space.shape[0]
 
-cppn_hidden_size1 = 8
-cppn_hidden_size2 = 4
+cppn_hidden_size1 = 32
+cppn_hidden_size2 = 16
 
 # Size of Individual
 #IND_SIZE=input_size*hidden_size1+hidden_size1*hidden_size2+hidden_size2*output_size + hidden_size1 + hidden_size2 + output_size
 
 cppn_weights_size = 4*cppn_hidden_size1+cppn_hidden_size1*cppn_hidden_size2+cppn_hidden_size2*1 + cppn_hidden_size1 + cppn_hidden_size2 + 1
-cppn_biases_size = 2*cppn_hidden_size1+cppn_hidden_size1*cppn_hidden_size2+cppn_hidden_size2*1 + cppn_hidden_size1 + cppn_hidden_size2 + 1
-IND_SIZE= cppn_weights_size# + cppn_biases_size
+IND_SIZE= cppn_weights_size
 
 print(IND_SIZE)
 
@@ -181,8 +162,8 @@ toolbox = base.Toolbox()
 toolbox.register("map", futures.map)
 toolbox.register("evaluate", evalFitness)
 
-strategy = cma.Strategy(centroid=[0.0] * IND_SIZE, sigma=1.0, lambda_= 200)
-# strategy = cma.Strategy(centroid=[0.0] * IND_SIZE, sigma=5.0)
+# strategy = cma.Strategy(centroid=[0.0] * IND_SIZE, sigma=1.0, lambda_= 200)
+strategy = cma.Strategy(centroid=[0.0] * IND_SIZE, sigma=5.0)
 toolbox.register("generate", strategy.generate, creator.Individual)
 toolbox.register("update", strategy.update)
 
