@@ -1,11 +1,14 @@
 import gym
+import gym, pybullet_envs
 import time
 
-env = gym.make('Ant-v2')
+env = gym.make("HalfCheetahBulletEnv-v0")
+env.render()
 env.reset()
 
 print(env.observation_space)
 print(env.action_space)
+temp = env.action_space
 
 done = False
 fitness = 0
@@ -19,3 +22,4 @@ while not done:
 
 print(fitness)
 env.close()
+

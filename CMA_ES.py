@@ -6,6 +6,7 @@ import torch.nn as nn
 import time
 import pickle
 import matplotlib.pyplot as plt
+import gym, pybullet_envs
 
 from deap import algorithms
 from deap import base
@@ -63,7 +64,7 @@ class NeuralNet(nn.Module):
 
         # Indirect encoding
         if indirect_encoding:
-            cppn_weights = NeuralNet(4, cppn_hidden_size1, cppn_hidden_size2, 1, individual[:cppn_weights_size], indirect_encoding=False)
+            cppn_weights = NeuralNet(2, cppn_hidden_size1, cppn_hidden_size2, 1, individual[:cppn_weights_size], indirect_encoding=False)
 
             self.W1 = np.zeros((self.hidden_size1, self.input_size), dtype=np.single)
             self.W2 = np.zeros((self.hidden_size2, self.hidden_size1), dtype=np.single)
@@ -110,7 +111,7 @@ class NeuralNet(nn.Module):
 
 def evalFitness(individual):
 
-    model = NeuralNet(input_size, hidden_size1, hidden_size2, output_size, individual, indirect_encoding=True)
+    model = NeuralNet(input_size, hidden_size1, hidden_size2, output_size, individual, indirect_encoding=False)
 
     fitness_current = 0
     ob = env.reset()
@@ -128,28 +129,21 @@ def evalFitness(individual):
 
     return fitness_current,
 
-
-# env = gym.make("AntBulletEnv-v0")
-# env = gym.make("HalfCheetahBulletEnv-v0")
-# env = gym.make("CartPoleBulletEnv-v1")
-# env = gym.make("Walker2DBulletEnv-v0")
-# env = gym.make("InvertedPendulumSwingupBulletEnv-v0")
-env = gym.make('Ant-v2')
+env = gym.make("HalfCheetahBulletEnv-v0")
 
 # Hyper-parameters
 input_size = env.observation_space.shape[0]
-hidden_size1 = 256
-hidden_size2 = 128
+hidden_size1 = 32
+hidden_size2 = 16
 output_size = env.action_space.shape[0]
 
 cppn_hidden_size1 = 32
 cppn_hidden_size2 = 16
 
 # Size of Individual
-#IND_SIZE=input_size*hidden_size1+hidden_size1*hidden_size2+hidden_size2*output_size + hidden_size1 + hidden_size2 + output_size
-
-cppn_weights_size = 4*cppn_hidden_size1+cppn_hidden_size1*cppn_hidden_size2+cppn_hidden_size2*1 + cppn_hidden_size1 + cppn_hidden_size2 + 1
-IND_SIZE= cppn_weights_size
+IND_SIZE=input_size*hidden_size1+hidden_size1*hidden_size2+hidden_size2*output_size + hidden_size1 + hidden_size2 + output_size
+#cppn_weights_size = 4*cppn_hidden_size1+cppn_hidden_size1*cppn_hidden_size2+cppn_hidden_size2*1 + cppn_hidden_size1 + cppn_hidden_size2 + 1
+#IND_SIZE= cppn_weights_size
 
 print(IND_SIZE)
 
@@ -180,16 +174,16 @@ if __name__ == "__main__":
     stats.register("min", np.min)
     stats.register("max", np.max)
 
-    pop, log = algorithms.eaGenerateUpdate(toolbox, ngen=2000, stats=stats, halloffame=hof)
+    pop, log = algorithms.eaGenerateUpdate(toolbox, ngen=500, stats=stats, halloffame=hof)
 
     best_individual = hof[0]
 
-    best_model = NeuralNet(input_size, hidden_size1, hidden_size2, output_size, best_individual, indirect_encoding=True)
-    W1, W2, W3 = best_model.get_weight_matrizes()
+    # best_model = NeuralNet(input_size, hidden_size1, hidden_size2, output_size, best_individual, indirect_encoding=False)
+    # W1, W2, W3 = best_model.get_weight_matrizes()
 
     # Save weights of hof individual
     with open("Weights_hof.pickle", "wb") as fp:
-        pickle.dump([W1, W2, W3], fp)
+        pickle.dump(list(best_individual), fp)
 
     # Get statistics from log
     generations = [i for i in range(len(log))]

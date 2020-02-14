@@ -7,16 +7,22 @@ import time
 
 # Fully connected neural network with one hidden layer
 class NeuralNet(nn.Module):
-    def __init__(self, input_size, hidden_size1, hidden_size2, output_size, W1, W2, W3):
+    def __init__(self, input_size, hidden_size1, hidden_size2, output_size, individual, indirect_encoding=False):
         super(NeuralNet, self).__init__()
-        self.fc1 = nn.Linear(input_size, hidden_size1)
+        self.fc1 = nn.Linear(input_size, hidden_size1, bias=False)
         self.tanh1 = nn.Tanh()
-        self.fc2 = nn.Linear(hidden_size1, hidden_size2)
+        self.fc2 = nn.Linear(hidden_size1, hidden_size2, bias=False)
         self.tanh2 = nn.Tanh()
-        self.fc3 = nn.Linear(hidden_size2, output_size)
+        self.fc3 = nn.Linear(hidden_size2, output_size, bias=False)
         self.tanh3 = nn.Tanh()
 
-        self.W1, self.W2, self.W3 = W1, W2, W3
+        self.input_size = input_size
+        self.hidden_size1 = hidden_size1
+        self.hidden_size2 = hidden_size2
+        self.output_size = output_size
+
+        self._set_weight_matrizes(individual, indirect_encoding)
+
         self.fc1.weight.data = torch.from_numpy(self.W1)
         self.fc2.weight.data = torch.from_numpy(self.W2)
         self.fc3.weight.data = torch.from_numpy(self.W3)
@@ -38,20 +44,49 @@ class NeuralNet(nn.Module):
 
         return output_np
 
+    def _set_weight_matrizes(self, individual, indirect_encoding):
+
+        W1_size = self.input_size*self.hidden_size1
+        W2_size = self.hidden_size1*self.hidden_size2
+        W3_size = self.hidden_size2*self.output_size
+
+        # Indirect encoding
+        if indirect_encoding:
+            pass
+
+        # Direct encoding
+        else:
+            # Weight Matrizes
+            self.W1 = np.array([[float(element)] for element in individual[0:W1_size]], dtype=np.single)
+            self.W2 = np.array([[float(element)] for element in individual[W1_size:W1_size+W2_size]], dtype=np.single)
+            self.W3 = np.array([[float(element)] for element in individual[W1_size+W2_size:W1_size+W2_size+W3_size]], dtype=np.single)
+
+            # Bias Matrizes
+            index_b = W1_size + W2_size + W3_size
+            self.B1 = np.array([float(element) for element in individual[index_b:index_b+self.hidden_size1]], dtype=np.single)
+            self.B2 = np.array([float(element) for element in individual[index_b+self.hidden_size1:index_b+self.hidden_size1+self.hidden_size2]], dtype=np.single)
+            self.B3 = np.array([float(element) for element in individual[index_b+self.hidden_size1+self.hidden_size2:]], dtype=np.single)
+
+            self.W1 = self.W1.reshape([self.hidden_size1, self.input_size])
+            self.W2 = self.W2.reshape([self.hidden_size2, self.hidden_size1])
+            self.W3 = self.W3.reshape([self.output_size, self.hidden_size2])
+
+            # Normalize
+            #self.W1 = (self.W1 - self.W1.mean()) / max(self.W1.std(), 0.1)
+            #self.W2 = (self.W2 - self.W2.mean()) / max(self.W2.std(), 0.1)
+            #self.W3 = (self.W3 - self.W3.mean()) / max(self.W3.std(), 0.1)
+            #self.B1 = (self.B1 - self.B1.mean()) / max(self.B1.std(), 0.1)
+            #self.B2 = (self.B2 - self.B2.mean()) / max(self.B2.std(), 0.1)
+            #self.B3 = (self.B3 - self.B3.mean()) / max(self.B3.std(), 0.1)
+
     def get_weight_matrizes(self):
         return self.W1, self.W2, self.W3
 
-
 # Load halloffame candidate
 with open("Weights_hof.pickle", "rb") as fp:
-    W1, W2, W3 = pickle.load(fp)
+    individual = pickle.load(fp)
 
-
-# env = gym.make("InvertedPendulumSwingupBulletEnv-v0")
-# env = gym.make("HalfCheetahBulletEnv-v0")
-# env = gym.make("CartPoleBulletEnv-v1")
-# env = gym.make("Walker2DBulletEnv-v0")
-env = gym.make('Walker2d-v2')
+env = gym.make('Acrobot-v1')
 env.render()
 env.reset()
 
@@ -62,14 +97,15 @@ done = False
 
 # Hyper-parameters
 input_size = env.observation_space.shape[0]
-hidden_size1 = 32
-hidden_size2 = 16
-output_size = env.action_space.shape[0]
+hidden_size1 = 8
+hidden_size2 = 4
+# output_size = env.action_space.shape[0]
+output_size = 3
 
 print(input_size)
 print(output_size)
 
-model = NeuralNet(input_size, hidden_size1, hidden_size2, output_size, W1, W2, W3)
+model = NeuralNet(input_size, hidden_size1, hidden_size2, output_size, individual, indirect_encoding=False)
 
 number_steps = 0
 
@@ -81,13 +117,16 @@ for i in range(10):
 
     # Test fitness through simulation
     while not done:
-        action = model.get_action(ob)
+        action2 = model.get_action(ob)
         # action = env.action_space.sample()
+
+        action = np.argmax(action2)
+
         ob, rew, done, info = env.step(action)
         number_steps = number_steps + 1
         fitness_current += rew
 
         env.render()
-        time.sleep(0.0100)
+        time.sleep(0.100)
 
     print(fitness_current)
