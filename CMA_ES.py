@@ -32,10 +32,13 @@ class NeuralNet(nn.Module):
         self.hidden_size2 = hidden_size2
         self.output_size = output_size
 
-        self.W1, self.W2, self.W3 = self._set_weight_matrizes(individual, indirect_encoding)
+        self.W1, self.W2, self.W3, self.B1, self.B2, self.B3 = self._set_weight_matrizes(individual, indirect_encoding)
         self.fc1.weight.data = torch.from_numpy(self.W1)
         self.fc2.weight.data = torch.from_numpy(self.W2)
         self.fc3.weight.data = torch.from_numpy(self.W3)
+        self.fc1.bias.data = torch.from_numpy(self.B1)
+        self.fc2.bias.data = torch.from_numpy(self.B2)
+        self.fc3.bias.data = torch.from_numpy(self.B3)
 
     def forward(self, x):
         out = self.fc1(x)
@@ -58,9 +61,9 @@ class NeuralNet(nn.Module):
 
         W1_size = self.input_size*self.hidden_size1
         W2_size = self.hidden_size1*self.hidden_size2
-        # W3_size = hidden_size2*output_size
+        W3_size = hidden_size2*output_size
 
-        # indirect encoding
+        # Indirect encoding
         if indirect_encoding:
             cppn = NeuralNet(4, cppn_hidden_size1, cppn_hidden_size2, 1, individual, indirect_encoding=False)
 
@@ -78,21 +81,29 @@ class NeuralNet(nn.Module):
             for i, j in np.ndindex(W3.shape):
                 W3[i, j] = cppn.get_action(np.array([i/(self.output_size-1),1.0,j/(self.hidden_size2-1),0.66]))
 
+        # Direct encoding
         else:
+            # Weight Matrizes
             W1 = np.array([[float(element)] for element in individual[0:W1_size]], dtype=np.single)
             W2 = np.array([[float(element)] for element in individual[W1_size:W1_size+W2_size]], dtype=np.single)
-            W3 = np.array([[float(element)] for element in individual[W1_size+W2_size:]], dtype=np.single)
+            W3 = np.array([[float(element)] for element in individual[W1_size+W2_size:W1_size+W2_size+W3_size]], dtype=np.single)
+
+            # Bias Matrizes
+            index_b = W1_size + W2_size + W3_size
+            B1 = np.array([float(element) for element in individual[index_b:index_b+hidden_size1]], dtype=np.single)
+            B2 = np.array([float(element) for element in individual[index_b+hidden_size1:index_b+hidden_size1+hidden_size2]], dtype=np.single)
+            B3 = np.array([float(element) for element in individual[index_b+hidden_size1+hidden_size2:]], dtype=np.single)
 
             W1 = W1.reshape([self.hidden_size1, self.input_size])
             W2 = W2.reshape([self.hidden_size2, self.hidden_size1])
             W3 = W3.reshape([self.output_size, self.hidden_size2])
 
         # Normalize
-        W1 = (W1 - W1.mean()) / max(W1.std(), 0.1)
-        W2 = (W2 - W2.mean()) / max(W2.std(), 0.1)
-        W3 = (W3 - W3.mean()) / max(W3.std(), 0.1)
+        # W1 = (W1 - W1.mean()) / max(W1.std(), 0.1)
+        # W2 = (W2 - W2.mean()) / max(W2.std(), 0.1)
+        # W3 = (W3 - W3.mean()) / max(W3.std(), 0.1)
 
-        return W1, W2, W3
+        return W1, W2, W3, B1, B2, B3
 
     def get_weight_matrizes(self):
         return self.W1, self.W2, self.W3
@@ -100,7 +111,7 @@ class NeuralNet(nn.Module):
 
 def evalFitness(individual):
 
-    model = NeuralNet(input_size, hidden_size1, hidden_size2, output_size, individual, indirect_encoding=True)
+    model = NeuralNet(input_size, hidden_size1, hidden_size2, output_size, individual, indirect_encoding=False)
 
     fitness_current = 0
     ob = env.reset()
@@ -136,7 +147,7 @@ cppn_hidden_size1 = 12
 cppn_hidden_size2 = 6
 
 # Size of Individual
-IND_SIZE=input_size*hidden_size1+hidden_size1*hidden_size2+hidden_size2*output_size
+IND_SIZE=input_size*hidden_size1+hidden_size1*hidden_size2+hidden_size2*output_size + hidden_size1 + hidden_size2 + output_size
 #IND_SIZE=4*cppn_hidden_size1+cppn_hidden_size1*cppn_hidden_size2+cppn_hidden_size2*1
 
 print(IND_SIZE)
@@ -150,8 +161,8 @@ toolbox = base.Toolbox()
 toolbox.register("map", futures.map)
 toolbox.register("evaluate", evalFitness)
 
-strategy = cma.Strategy(centroid=[0.0] * IND_SIZE, sigma=1.0, lambda_= 200)
-# strategy = cma.Strategy(centroid=[0.0] * IND_SIZE, sigma=5.0)
+# strategy = cma.Strategy(centroid=[0.0] * IND_SIZE, sigma=1.0, lambda_= 200)
+strategy = cma.Strategy(centroid=[0.0] * IND_SIZE, sigma=5.0)
 toolbox.register("generate", strategy.generate, creator.Individual)
 toolbox.register("update", strategy.update)
 
