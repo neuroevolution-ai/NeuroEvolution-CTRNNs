@@ -1,14 +1,14 @@
 import gym
-import gym, pybullet_envs
 import time
 
-env = gym.make("HalfCheetahBulletEnv-v0")
+env = gym.make('MountainCarContinuous-v0')
 env.render()
 env.reset()
 
 print(env.observation_space)
 print(env.action_space)
-temp = env.action_space
+temp1 = env.observation_space
+temp2 = env.action_space
 
 done = False
 fitness = 0

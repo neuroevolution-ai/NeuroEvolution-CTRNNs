@@ -129,7 +129,8 @@ def evalFitness(individual):
 
     return fitness_current,
 
-env = gym.make("HalfCheetahBulletEnv-v0")
+
+env = gym.make('MountainCarContinuous-v0')
 
 # Hyper-parameters
 input_size = env.observation_space.shape[0]
