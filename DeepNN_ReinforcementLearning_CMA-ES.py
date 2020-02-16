@@ -155,8 +155,8 @@ toolbox = base.Toolbox()
 
 # Multiprocessing
 toolbox.register("map", futures.map)
-toolbox.register("evaluate", evalFitness)
 
+toolbox.register("evaluate", evalFitness)
 # strategy = cma.Strategy(centroid=[0.0] * IND_SIZE, sigma=1.0, lambda_= 200)
 strategy = cma.Strategy(centroid=[0.0] * IND_SIZE, sigma=5.0)
 toolbox.register("generate", strategy.generate, creator.Individual)
@@ -178,9 +178,6 @@ if __name__ == "__main__":
     pop, log = algorithms.eaGenerateUpdate(toolbox, ngen=500, stats=stats, halloffame=hof)
 
     best_individual = hof[0]
-
-    # best_model = NeuralNet(input_size, hidden_size1, hidden_size2, output_size, best_individual, indirect_encoding=False)
-    # W1, W2, W3 = best_model.get_weight_matrizes()
 
     # Save weights of hof individual
     with open("Weights_hof.pickle", "wb") as fp:
