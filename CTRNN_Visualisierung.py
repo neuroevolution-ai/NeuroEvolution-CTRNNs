@@ -1,3 +1,4 @@
+import mujoco_py
 import gym
 import pickle
 
@@ -7,12 +8,9 @@ import time
 def model1_np(y, alpha, V, W, u):
 
     u2 = u[:, np.newaxis]
-    temp0 = np.tanh(y)
-    temp1 = np.dot(W, temp0)
-    temp2 = np.dot(V, u2)
 
     # Differential equation
-    dydt =temp1 + temp2
+    dydt = np.dot(W, np.tanh(y)) + np.dot(V, u2)
 
     return dydt
 
@@ -22,7 +20,8 @@ with open("halloffame_individual1.pickle", "rb") as fp:
     individual = pickle.load(fp)
 
 # env = gym.make('Pendulum-v0')
-env = gym.make('MountainCarContinuous-v0')
+# env = gym.make('MountainCarContinuous-v0')
+env = gym.make('InvertedDoublePendulum-v2')
 # env.render()
 env.reset()
 
@@ -31,7 +30,7 @@ fitness_current = 0
 done = False
 
 # Number of neurons
-number_neurons = 30
+number_neurons = 10
 input_size = env.observation_space.shape[0]
 output_size = env.action_space.shape[0]
 

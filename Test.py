@@ -1,10 +1,12 @@
+import mujoco_py
 import gym
 import time
 import numpy as np
 
-env = gym.make('BipedalWalker-v3')
+env = gym.make('InvertedPendulum-v2')
+# env = gym.make('BipedalWalker-v3')
 #env = gym.make('MountainCarContinuous-v0')
-# env.render()
+env.render()
 env.reset()
 
 temp1 = env.observation_space.shape[0]

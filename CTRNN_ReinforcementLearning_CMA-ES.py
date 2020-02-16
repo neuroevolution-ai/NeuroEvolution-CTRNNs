@@ -1,5 +1,5 @@
+import mujoco_py
 import random
-import gym
 import numpy as np
 import time
 import pickle
@@ -36,6 +36,7 @@ def evalFitness(individual):
 
     V = V.reshape([number_neurons, input_size])
     W = W.reshape([number_neurons, number_neurons])
+    T = T.reshape([number_neurons, output_size])
 
     # Set elements of main diagonal to smaller 0
     for j in range(number_neurons):
@@ -43,7 +44,7 @@ def evalFitness(individual):
 
     fitness_current = 0
 
-    for i in range(10):
+    for i in range(1):
 
         # Anfangswerte
         y = np.zeros(number_neurons)
@@ -53,30 +54,32 @@ def evalFitness(individual):
         done = False
 
         # Test fitness through simulation
-        n = 0
-        while True:
+        #n = 0
+        while not done:
             dy = model1_np(y, alpha, V, W, ob)
             y = y + delta_t * dy
             o = np.dot(y.T, T)
 
-            o2 = 2*np.tanh(o)
+            o2 = np.tanh(o)
 
             action = o2[0]
+            action2 = env.action_space.sample()
             ob, rew, done, info = env.step(action)
 
-            # fitness_current += rew
+            fitness_current += rew
 
-            n += 1
-            if n > 200:
-                fitness_current += rew
-            if n == 400:
-                break
+            #n += 1
+            #if n > 200:
+            #    fitness_current += rew
+            #if n == 400:
+            #    break
 
-    return fitness_current/10,
+    return fitness_current/1,
 
 
 # env = gym.make('MountainCarContinuous-v0')
-env = gym.make('Pendulum-v0')
+# env = gym.make('Swimmer-v2')
+env = gym.make('HalfCheetah-v2')
 
 # Number of neurons
 number_neurons = 5
@@ -86,7 +89,7 @@ output_size = env.action_space.shape[0]
 # Alpha
 alpha = 0.01
 
-delta_t = 0.1
+delta_t = 0.05
 
 # Size of Individual
 IND_SIZE = input_size * number_neurons + number_neurons * number_neurons + number_neurons * output_size
@@ -102,8 +105,8 @@ toolbox = base.Toolbox()
 toolbox.register("map", futures.map)
 
 toolbox.register("evaluate", evalFitness)
-strategy = cma.Strategy(centroid=[0.0] * IND_SIZE, sigma=1.0, lambda_= 200)
-# strategy = cma.Strategy(centroid=[0.0] * IND_SIZE, sigma=1.0)
+# strategy = cma.Strategy(centroid=[0.0] * IND_SIZE, sigma=1.0, lambda_= 200)
+strategy = cma.Strategy(centroid=[0.0] * IND_SIZE, sigma=1.0)
 toolbox.register("generate", strategy.generate, creator.Individual)
 toolbox.register("update", strategy.update)
 
@@ -118,7 +121,7 @@ if __name__ == "__main__":
     stats.register("min", np.min)
     stats.register("max", np.max)
 
-    pop, log = algorithms.eaGenerateUpdate(toolbox, ngen=500, stats=stats, halloffame=hof)
+    pop, log = algorithms.eaGenerateUpdate(toolbox, ngen=200, stats=stats, halloffame=hof)
 
     for i in range(len(hof)):
 
