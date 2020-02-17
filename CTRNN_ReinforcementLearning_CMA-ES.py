@@ -38,7 +38,7 @@ def evalFitness(individual):
     W = W.reshape([number_neurons, number_neurons])
     T = T.reshape([number_neurons, output_size])
 
-    # Set elements of main diagonal to smaller 0
+    # Set elements of main diagonal to less than 0
     for j in range(number_neurons):
         W[j][j] = -abs(W[j][j])
 
@@ -82,7 +82,7 @@ def evalFitness(individual):
 env = gym.make('HalfCheetah-v2')
 
 # Number of neurons
-number_neurons = 5
+number_neurons = 20
 input_size = env.observation_space.shape[0]
 output_size = env.action_space.shape[0]
 
@@ -105,8 +105,8 @@ toolbox = base.Toolbox()
 toolbox.register("map", futures.map)
 
 toolbox.register("evaluate", evalFitness)
-# strategy = cma.Strategy(centroid=[0.0] * IND_SIZE, sigma=1.0, lambda_= 200)
-strategy = cma.Strategy(centroid=[0.0] * IND_SIZE, sigma=1.0)
+strategy = cma.Strategy(centroid=[0.0] * IND_SIZE, sigma=1.0, lambda_= 500)
+# strategy = cma.Strategy(centroid=[0.0] * IND_SIZE, sigma=1.0)
 toolbox.register("generate", strategy.generate, creator.Individual)
 toolbox.register("update", strategy.update)
 
@@ -121,7 +121,7 @@ if __name__ == "__main__":
     stats.register("min", np.min)
     stats.register("max", np.max)
 
-    pop, log = algorithms.eaGenerateUpdate(toolbox, ngen=200, stats=stats, halloffame=hof)
+    pop, log = algorithms.eaGenerateUpdate(toolbox, ngen=2500, stats=stats, halloffame=hof)
 
     for i in range(len(hof)):
 
