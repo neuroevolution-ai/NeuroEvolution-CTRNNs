@@ -74,17 +74,22 @@ def evalFitness(individual):
             #if n == 400:
             #    break
 
-    return fitness_current/1,
+    return fitness_current,
 
 
 # env = gym.make('MountainCarContinuous-v0')
 # env = gym.make('Swimmer-v2')
-env = gym.make('HalfCheetah-v2')
+# env = gym.make('Hopper-v2')
+# env = gym.make('Ant-v2')
+env = gym.make('Walker2d-v2')
 
 # Number of neurons
-number_neurons = 20
+number_neurons = 30
 input_size = env.observation_space.shape[0]
 output_size = env.action_space.shape[0]
+
+print(input_size)
+print(output_size)
 
 # Alpha
 alpha = 0.01
@@ -105,7 +110,7 @@ toolbox = base.Toolbox()
 toolbox.register("map", futures.map)
 
 toolbox.register("evaluate", evalFitness)
-strategy = cma.Strategy(centroid=[0.0] * IND_SIZE, sigma=1.0, lambda_= 500)
+strategy = cma.Strategy(centroid=[0.0] * IND_SIZE, sigma=1.0, lambda_= 200)
 # strategy = cma.Strategy(centroid=[0.0] * IND_SIZE, sigma=1.0)
 toolbox.register("generate", strategy.generate, creator.Individual)
 toolbox.register("update", strategy.update)
@@ -121,7 +126,7 @@ if __name__ == "__main__":
     stats.register("min", np.min)
     stats.register("max", np.max)
 
-    pop, log = algorithms.eaGenerateUpdate(toolbox, ngen=2500, stats=stats, halloffame=hof)
+    pop, log = algorithms.eaGenerateUpdate(toolbox, ngen=1500, stats=stats, halloffame=hof)
 
     for i in range(len(hof)):
 
