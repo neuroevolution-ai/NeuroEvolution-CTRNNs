@@ -94,8 +94,6 @@ delta_t = configuration_data["delta_t"]
 # Size of Individual
 IND_SIZE = input_size * number_neurons + number_neurons * number_neurons + number_neurons * output_size
 
-print(IND_SIZE)
-
 creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 creator.create("Individual", list, typecode='b', fitness=creator.FitnessMax)
 
@@ -147,6 +145,31 @@ if __name__ == "__main__":
     # Save Log
     with open(os.path.join(directory, 'Log.json'), 'w') as outfile:
         json.dump(log, outfile)
+
+    # Write Log to text file
+    with open(os.path.join(directory, 'Log.txt'), 'w') as write_file:
+
+        write_file.write('Number of Generations: {:d}\n'.format(configuration_data["number_generations"]))
+        write_file.write('Genome Size: {:d}\n'.format(IND_SIZE))
+        write_file.write('Inputs: {:d}\n'.format(input_size))
+        write_file.write('Outputs: {:d}\n'.format(input_size))
+
+        dash = '-' * 80
+
+        write_file.write(dash + '\n')
+        write_file.write(
+            '{:<8s}{:<12s}{:<16s}{:<16s}{:<16s}{:<16s}\n'.format('gen', 'nevals', 'avg', 'std', 'min', 'max'))
+        write_file.write(dash + '\n')
+
+        # Write data for each episode
+        for line in log:
+            write_file.write(
+                '{:<8d}{:<12d}{:<16.2f}{:<16.2f}{:<16.2f}{:<16.2f}\n'.format(line['gen'], line['nevals'],
+                                                                             line['avg'], line['std'], line['min'],
+                                                                             line['max']))
+
+        # Write elapsed time
+        write_file.write("\nTime elapsed: %.4f seconds" % (time.time() - startTime))
 
     # Get statistics from log
     generations = [i for i in range(len(log))]
