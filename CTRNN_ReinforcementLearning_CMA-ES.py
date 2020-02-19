@@ -58,24 +58,21 @@ def evalFitness(individual):
         while not done:
             dy = model1_np(y, alpha, V, W, ob)
             y = y + delta_t * dy
+
+            # State boundaries
+            y = np.clip(y, -1.0, 1.0)
+
             o = np.dot(y.T, T)
 
             o2 = np.tanh(o)
 
             action = o2[0]
-            action2 = env.action_space.sample()
+
             ob, rew, done, info = env.step(action)
 
             fitness_current += rew
 
-            #n += 1
-            #if n > 200:
-            #    fitness_current += rew
-            #if n == 400:
-            #    break
-
     return fitness_current,
-
 
 # env = gym.make('MountainCarContinuous-v0')
 # env = gym.make('Swimmer-v2')
