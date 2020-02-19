@@ -47,6 +47,7 @@ def evalFitness(individual):
 
     fitness_current = 0
 
+
     for i in range(configuration_data["number_fitness_runs"]):
 
         # Anfangswerte
@@ -72,7 +73,7 @@ def evalFitness(individual):
 
             fitness_current += rew
 
-    return fitness_current,
+    return fitness_current/configuration_data["number_fitness_runs"],
 
 
 # Load configuration file
