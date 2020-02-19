@@ -5,6 +5,9 @@ import time
 import pickle
 import matplotlib.pyplot as plt
 import gym, pybullet_envs
+import json
+from datetime import datetime
+import os
 
 from deap import algorithms
 from deap import base
@@ -14,7 +17,7 @@ from deap import cma
 from scoop import futures
 
 
-def model1_np(y, alpha, V, W, u):
+def continuous_time_rnn(y, alpha, V, W, u):
 
     u2 = u[:, np.newaxis]
 
@@ -44,7 +47,7 @@ def evalFitness(individual):
 
     fitness_current = 0
 
-    for i in range(1):
+    for i in range(configuration_data["number_fitness_runs"]):
 
         # Anfangswerte
         y = np.zeros(number_neurons)
@@ -54,44 +57,39 @@ def evalFitness(individual):
         done = False
 
         # Test fitness through simulation
-        #n = 0
         while not done:
-            dy = model1_np(y, alpha, V, W, ob)
+            dy = continuous_time_rnn(y, alpha, V, W, ob)
             y = y + delta_t * dy
 
-            # State boundaries
-            y = np.clip(y, -1.0, 1.0)
+            # Clip to state boundaries
+            y = np.clip(y, configuration_data["clipping_range_min"], configuration_data["clipping_range_max"])
 
-            o = np.dot(y.T, T)
+            o = np.tanh(np.dot(y.T, T))
+            action = o[0]
 
-            o2 = np.tanh(o)
-
-            action = o2[0]
-
+            # Perform simulation step of the environment
             ob, rew, done, info = env.step(action)
 
             fitness_current += rew
 
     return fitness_current,
 
-# env = gym.make('MountainCarContinuous-v0')
-# env = gym.make('Swimmer-v2')
-# env = gym.make('Hopper-v2')
-# env = gym.make('Ant-v2')
-env = gym.make('Walker2d-v2')
+
+# Load configuration file
+with open("Configuration.json", "r") as read_file:
+    configuration_data = json.load(read_file)
+
+env = gym.make(configuration_data["environment"])
 
 # Number of neurons
-number_neurons = 30
+number_neurons = configuration_data["number_neurons"]
 input_size = env.observation_space.shape[0]
 output_size = env.action_space.shape[0]
-
-print(input_size)
-print(output_size)
 
 # Alpha
 alpha = 0.01
 
-delta_t = 0.05
+delta_t = configuration_data["delta_t"]
 
 # Size of Individual
 IND_SIZE = input_size * number_neurons + number_neurons * number_neurons + number_neurons * output_size
@@ -107,8 +105,14 @@ toolbox = base.Toolbox()
 toolbox.register("map", futures.map)
 
 toolbox.register("evaluate", evalFitness)
-strategy = cma.Strategy(centroid=[0.0] * IND_SIZE, sigma=1.0, lambda_= 200)
-# strategy = cma.Strategy(centroid=[0.0] * IND_SIZE, sigma=1.0)
+
+population_size = configuration_data["population_size"]
+
+if population_size == 'default':
+    strategy = cma.Strategy(centroid=[0.0] * IND_SIZE, sigma=configuration_data["sigma"])
+else:
+    strategy = cma.Strategy(centroid=[0.0] * IND_SIZE, sigma=configuration_data["sigma"], lambda_=population_size)
+
 toolbox.register("generate", strategy.generate, creator.Individual)
 toolbox.register("update", strategy.update)
 
@@ -123,22 +127,32 @@ if __name__ == "__main__":
     stats.register("min", np.min)
     stats.register("max", np.max)
 
-    pop, log = algorithms.eaGenerateUpdate(toolbox, ngen=1500, stats=stats, halloffame=hof)
+    pop, log = algorithms.eaGenerateUpdate(toolbox, ngen=configuration_data["number_generations"], stats=stats, halloffame=hof)
 
-    for i in range(len(hof)):
+    # print elapsed time
+    print("Time elapsed: %s" % (time.time() - startTime))
 
-        # Save weights of hof individual
-        with open("halloffame_individual" + str(i) + ".pickle", "wb") as fp:
-            pickle.dump(list(hof[i]), fp)
+    # Create new directory to store data of current simulation run
+    directory = os.path.join('Simulation_Results','CTRNN', datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+    os.makedirs(directory)
+
+    # Save Configuration file as json
+    with open(os.path.join(directory, 'Configuration.json'), 'w') as outfile:
+        json.dump(configuration_data, outfile)
+
+    # Save Weights of hall of fame individuals
+    with open(os.path.join(directory, 'HallOfFame.pickle'), "wb") as fp:
+        pickle.dump(hof, fp)
+
+    # Save Log
+    with open(os.path.join(directory, 'Log.json'), 'w') as outfile:
+        json.dump(log, outfile)
 
     # Get statistics from log
     generations = [i for i in range(len(log))]
     avg = [generation["avg"] for generation in log]
     high = [generation["avg"] + generation["std"] for generation in log]
     low = [generation["avg"] - generation["std"] for generation in log]
-
-    # print results
-    print("Time elapsed: %s" % (time.time() - startTime))
 
     # Plot results
     plt.plot(generations, avg, 'r-')

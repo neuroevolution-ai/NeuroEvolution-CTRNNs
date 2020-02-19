@@ -3,10 +3,10 @@ import gym
 import time
 import numpy as np
 import json
+from datetime import datetime
+import os
 
 env = gym.make('InvertedPendulum-v2')
-# env = gym.make('BipedalWalker-v3')
-#env = gym.make('MountainCarContinuous-v0')
 env.render()
 env.reset()
 
@@ -15,15 +15,16 @@ temp2 = env.action_space.shape[0]
 print(temp1)
 print(temp2)
 
-with open("Configuration_Optimization.json", "r") as read_file:
+with open("Configuration.json", "r") as read_file:
     data = json.load(read_file)
 
-print(data["environment"])
-print(data["number_neurons"])
-print(data["delta_t"])
-print(data["population_size"])
-print(data["number_generations"])
-print(data["number_fitness_runs"])
+# Create new directory for simulation run
+directory = os.path.join('Simulation-Results', datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+os.makedirs(directory)
+
+# Save json
+with open(os.path.join(directory, 'Configuration.json'), 'w') as outfile:
+    json.dump(data, outfile)
 
 done = False
 fitness = 0

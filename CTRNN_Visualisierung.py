@@ -16,7 +16,7 @@ def model1_np(y, alpha, V, W, u):
 
 
 # Load halloffame candidate
-with open("halloffame_individual4.pickle", "rb") as fp:
+with open("halloffame_individual1.pickle", "rb") as fp:
     individual = pickle.load(fp)
 
 env = gym.make('Walker2d-v2')
@@ -35,7 +35,7 @@ output_size = env.action_space.shape[0]
 # Alpha
 alpha = 0.01
 
-delta_t = 0.1
+delta_t = 0.05
 
 # Size of Individual
 IND_SIZE = input_size * number_neurons + number_neurons * number_neurons + number_neurons * output_size
@@ -74,6 +74,9 @@ for i in range(1):
     while not done:
         dy = model1_np(y, alpha, V, W, ob)
         y = y + delta_t * dy
+
+        y = np.clip(y, -1.0, 1.0)
+
         o = np.dot(y.T, T)
 
         o2 = np.tanh(o)
