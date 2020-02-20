@@ -89,7 +89,7 @@ with open("Configuration.json", "r") as read_file:
 env = gym.make(configuration_data["environment"])
 
 # Set random seed for gym environment
-if isinstance(configuration_data["random_seed_for_environment"], int):
+if configuration_data["random_seed_for_environment"] is not -1:
     env.seed(configuration_data["random_seed_for_environment"])
 
 # Number of neurons
