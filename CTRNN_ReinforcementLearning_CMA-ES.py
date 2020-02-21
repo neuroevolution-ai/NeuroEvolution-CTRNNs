@@ -85,6 +85,7 @@ toolbox.register("update", strategy.update)
 if __name__ == "__main__":
 
     startTime = time.time()
+    startDate = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
     hof = tools.HallOfFame(5)
     stats = tools.Statistics(lambda ind: ind.fitness.values)
@@ -100,7 +101,7 @@ if __name__ == "__main__":
     print("Time elapsed: %s" % (time.time() - startTime))
 
     # Create new directory to store data of current simulation run
-    directory = os.path.join('Simulation_Results', 'CTRNN', datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+    directory = os.path.join('Simulation_Results', 'CTRNN', startDate)
     os.makedirs(directory)
 
     # Save Configuration file as json
