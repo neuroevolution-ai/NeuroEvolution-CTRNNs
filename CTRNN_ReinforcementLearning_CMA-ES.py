@@ -2,7 +2,6 @@ import mujoco_py
 import numpy as np
 import time
 import pickle
-import matplotlib.pyplot as plt
 import gym
 import pybullet_envs
 import json
@@ -140,18 +139,3 @@ if __name__ == "__main__":
 
         # Write elapsed time
         write_file.write("\nTime elapsed: %.4f seconds" % (time.time() - startTime))
-
-    # Get statistics from log
-    generations = [i for i in range(len(log))]
-    avg = [generation["avg"] for generation in log]
-    high = [generation["avg"] + generation["std"] for generation in log]
-    low = [generation["avg"] - generation["std"] for generation in log]
-
-    # Plot results
-    plt.plot(generations, avg, 'r-')
-    plt.plot(generations, high, 'y--')
-    plt.plot(generations, low, 'b--')
-    plt.xlabel('Generations')
-    plt.legend(['avg', 'std high', 'std low'])
-    plt.grid()
-    plt.show()
