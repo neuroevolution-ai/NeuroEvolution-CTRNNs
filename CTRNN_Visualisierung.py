@@ -57,11 +57,11 @@ for i in range(1):
 
     # Create Contininuous-Time RNN object
     brain = ctrnn.ContinuousTimeRNN(individual, input_size, number_neurons, output_size,
-                                                  configuration_data["optimize_y0"],
-                                                  configuration_data["delta_t"],
-                                                  configuration_data["clipping_range_min"],
-                                                  configuration_data["clipping_range_max"],
-                                                  configuration_data["set_principle_diagonal_elements_of_W_negative"])
+                                    configuration_data["optimize_y0"],
+                                    configuration_data["delta_t"],
+                                    configuration_data["clipping_range_min"],
+                                    configuration_data["clipping_range_max"],
+                                    configuration_data["set_principle_diagonal_elements_of_W_negative"])
 
     # Test fitness through simulation
     while not done:
