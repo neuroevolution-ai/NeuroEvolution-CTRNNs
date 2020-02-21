@@ -19,7 +19,7 @@ from scoop import futures
 
 def evalFitness(individual):
 
-    # Create Contininuous-Time RNN object
+    # Create Continuous-Time RNN object
     brain = ctrnn.ContinuousTimeRNN(individual, input_size, number_neurons, output_size,
                                     configuration_data["optimize_y0"],
                                     configuration_data["delta_t"],
