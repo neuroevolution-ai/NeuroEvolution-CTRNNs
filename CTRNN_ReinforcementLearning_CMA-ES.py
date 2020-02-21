@@ -121,7 +121,7 @@ if __name__ == "__main__":
         write_file.write('Number of Generations: {:d}\n'.format(configuration_data["number_generations"]))
         write_file.write('Genome Size: {:d}\n'.format(IND_SIZE))
         write_file.write('Inputs: {:d}\n'.format(input_size))
-        write_file.write('Outputs: {:d}\n'.format(input_size))
+        write_file.write('Outputs: {:d}\n'.format(output_size))
 
         dash = '-' * 80
 
