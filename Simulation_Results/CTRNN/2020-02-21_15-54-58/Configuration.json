@@ -1,0 +1,1 @@
+{"environment": "HalfCheetah-v2", "random_seed_for_environment": 0, "number_neurons": 30, "delta_t": 0.05, "clipping_range_max": 1.0, "clipping_range_min": -1.0, "optimize_y0": true, "set_principle_diagonal_elements_of_W_negative": true, "population_size": 200, "number_generations": 1500, "sigma": 1.0, "number_fitness_runs": 1}
