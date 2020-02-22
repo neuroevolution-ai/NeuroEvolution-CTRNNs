@@ -120,7 +120,20 @@ if __name__ == "__main__":
     # Write Log to text file
     with open(os.path.join(directory, 'Log.txt'), 'w') as write_file:
 
+        write_file.write('Gym environment: {:s}\n'.format(configuration_data["environment"]))
+        write_file.write('Random seed for environment: {:d}\n'.format(configuration_data["random_seed_for_environment"]))
+        write_file.write('Number of neurons: {:d}\n'.format(configuration_data["number_neurons"]))
+        write_file.write('Time step (delta_t): {:.3f}\n'.format(configuration_data["delta_t"]))
+        write_file.write('Optimize state boundaries: {}\n'.format(configuration_data["optimize_state_boundaries"]))
+        write_file.write('Clipping range max: {:.2f}\n'.format(configuration_data["clipping_range_max"]))
+        write_file.write('Clipping range min: {:.2f}\n'.format(configuration_data["clipping_range_min"]))
+        write_file.write('Optimize initial states y0: {}\n'.format(configuration_data["optimize_y0"]))
+        write_file.write('Set principal elements of W to negative: {}\n'.format(configuration_data["set_principle_diagonal_elements_of_W_negative"]))
+        write_file.write('Population size: {:d}\n'.format(configuration_data["population_size"]))
         write_file.write('Number of Generations: {:d}\n'.format(configuration_data["number_generations"]))
+        write_file.write('Sigma: {:.2f}\n'.format(configuration_data["sigma"]))
+        write_file.write('Number of runs per evaluation: {:d}\n'.format(configuration_data["number_fitness_runs"]))
+        write_file.write('\n')
         write_file.write('Genome Size: {:d}\n'.format(IND_SIZE))
         write_file.write('Inputs: {:d}\n'.format(input_size))
         write_file.write('Outputs: {:d}\n'.format(output_size))
