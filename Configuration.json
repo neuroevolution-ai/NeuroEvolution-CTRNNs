@@ -3,6 +3,7 @@
   "random_seed_for_environment": 0,
   "number_neurons": 30,
   "delta_t": 0.05,
+  "optimize_state_boundaries": true,
   "clipping_range_max": 1.0,
   "clipping_range_min":-1.0,
   "optimize_y0": true,

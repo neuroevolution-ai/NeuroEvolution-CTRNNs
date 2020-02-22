@@ -3,21 +3,13 @@ import numpy as np
 
 class ContinuousTimeRNN:
 
-    def __init__(self, individual, input_size, number_neurons, output_size, optimize_y0, delta_t, clipping_range_min,
+    def __init__(self, individual, input_size, number_neurons, output_size, optimize_y0, delta_t, optimize_state_boundaries, clipping_range_min,
                  clipping_range_max, set_principle_diagonal_elements_of_W_negative):
 
         V_size = input_size * number_neurons
         W_size = number_neurons * number_neurons
         T_size = number_neurons * output_size
-        M_size = V_size + W_size + T_size
 
-        # Anfangswerte für y
-        if optimize_y0:
-            y0 = np.array([element for element in individual[M_size:M_size+number_neurons]])
-        else:
-            y0 = np.zeros(number_neurons)
-
-        self.y = y0[:, np.newaxis]
         self.clipping_range_min = clipping_range_min
         self.clipping_range_max = clipping_range_max
         self.delta_t = delta_t
@@ -32,8 +24,24 @@ class ContinuousTimeRNN:
         self.W = self.W.reshape([number_neurons, number_neurons])
         self.T = self.T.reshape([number_neurons, output_size])
 
-        self.clipping_range_min = [-abs(element) for element in individual[M_size+number_neurons:M_size+2*number_neurons]]
-        self.clipping_range_max = [abs(element) for element in individual[M_size+2*number_neurons:]]
+        index = V_size + W_size + T_size
+
+        # Initial state values y0
+        if optimize_y0:
+            y0 = np.array([element for element in individual[index:index+number_neurons]])
+            index += number_neurons
+        else:
+            y0 = np.zeros(number_neurons)
+
+        self.y = y0[:, np.newaxis]
+
+        # Clipping ranges for state boundaries
+        if optimize_state_boundaries:
+            self.clipping_range_min = [-abs(element) for element in individual[index:index+number_neurons]]
+            self.clipping_range_max = [abs(element) for element in individual[index+number_neurons:]]
+        else:
+            self.clipping_range_min = [clipping_range_min] * number_neurons
+            self.clipping_range_max = [clipping_range_max] * number_neurons
 
         # Set elements of main diagonal to less than 0
         if set_principle_diagonal_elements_of_W_negative:
@@ -62,14 +70,14 @@ class ContinuousTimeRNN:
         return o[0]
 
     @staticmethod
-    def get_individual_size(input_size, number_neurons, output_size, optimize_y0):
+    def get_individual_size(input_size, number_neurons, output_size, optimize_y0, optimize_state_boundaries):
 
         individual_size = input_size * number_neurons + number_neurons * number_neurons + number_neurons * output_size
 
         if optimize_y0:
             individual_size += number_neurons
 
-        # For optimizing clipping ranges
-        individual_size += 2* number_neurons
+        if optimize_state_boundaries:
+            individual_size += 2 * number_neurons
 
         return individual_size

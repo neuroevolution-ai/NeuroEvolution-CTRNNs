@@ -23,6 +23,7 @@ def evalFitness(individual):
     brain = ctrnn.ContinuousTimeRNN(individual, input_size, number_neurons, output_size,
                                     configuration_data["optimize_y0"],
                                     configuration_data["delta_t"],
+                                    configuration_data["optimize_state_boundaries"],
                                     configuration_data["clipping_range_min"],
                                     configuration_data["clipping_range_max"],
                                     configuration_data["set_principle_diagonal_elements_of_W_negative"])
@@ -63,7 +64,8 @@ input_size = env.observation_space.shape[0]
 number_neurons = configuration_data["number_neurons"]
 output_size = env.action_space.shape[0]
 IND_SIZE = ctrnn.ContinuousTimeRNN.get_individual_size(input_size, number_neurons, output_size,
-                                                       configuration_data["optimize_y0"])
+                                                       configuration_data["optimize_y0"],
+                                                       configuration_data["optimize_state_boundaries"],)
 
 creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 creator.create("Individual", list, typecode='b', fitness=creator.FitnessMax)
