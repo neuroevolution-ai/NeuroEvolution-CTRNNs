@@ -3,8 +3,15 @@ import numpy as np
 
 class ContinuousTimeRNN:
 
-    def __init__(self, individual, input_size, number_neurons, output_size, optimize_y0, delta_t, optimize_state_boundaries, clipping_range_min,
-                 clipping_range_max, set_principle_diagonal_elements_of_W_negative):
+    def __init__(self, input_size, output_size, individual, config):
+
+        optimize_y0 = config["optimize_y0"]
+        delta_t = config["delta_t"]
+        optimize_state_boundaries =  config["optimize_state_boundaries"]
+        clipping_range_min = config["clipping_range_min"]
+        clipping_range_max =  config["clipping_range_max"]
+        set_principle_diagonal_elements_of_W_negative = config["set_principle_diagonal_elements_of_W_negative"]
+        number_neurons = config["number_neurons"]
 
         V_size = input_size * number_neurons
         W_size = number_neurons * number_neurons
@@ -70,7 +77,11 @@ class ContinuousTimeRNN:
         return o[0]
 
     @staticmethod
-    def get_individual_size(input_size, number_neurons, output_size, optimize_y0, optimize_state_boundaries):
+    def get_individual_size(input_size, output_size, config):
+
+        optimize_y0 = config["optimize_y0"]
+        optimize_state_boundaries = config["optimize_state_boundaries"]
+        number_neurons = config["number_neurons"]
 
         individual_size = input_size * number_neurons + number_neurons * number_neurons + number_neurons * output_size
 

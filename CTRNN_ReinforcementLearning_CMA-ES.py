@@ -1,6 +1,7 @@
 import mujoco_py
 import numpy as np
 import time
+import sys
 import pickle
 import gym
 import pybullet_envs
@@ -8,6 +9,7 @@ import json
 from datetime import datetime
 import os
 import brains.continuous_time_rnn as ctrnn
+import brains.layered_nn as lnn
 
 from deap import algorithms
 from deap import base
@@ -19,14 +21,8 @@ from scoop import futures
 
 def evalFitness(individual):
 
-    # Create Continuous-Time RNN object
-    brain = ctrnn.ContinuousTimeRNN(individual, input_size, number_neurons, output_size,
-                                    configuration_data["optimize_y0"],
-                                    configuration_data["delta_t"],
-                                    configuration_data["optimize_state_boundaries"],
-                                    configuration_data["clipping_range_min"],
-                                    configuration_data["clipping_range_max"],
-                                    configuration_data["set_principle_diagonal_elements_of_W_negative"])
+    # Create brain
+    brain = brain_class(input_size, output_size, individual, configuration_data)
 
     fitness_current = 0
     number_fitness_runs = configuration_data["number_fitness_runs"]
@@ -48,10 +44,17 @@ def evalFitness(individual):
 
     return fitness_current/number_fitness_runs,
 
-
 # Load configuration file
 with open("Configuration.json", "r") as read_file:
     configuration_data = json.load(read_file)
+
+# Get brain class
+if configuration_data["neural_network_type"] == 'LNN':
+    brain_class = lnn.LayeredNN
+elif configuration_data["neural_network_type"] == 'CTRNN':
+    brain_class = ctrnn.ContinuousTimeRNN
+else:
+    sys.exit()
 
 env = gym.make(configuration_data["environment"])
 
@@ -61,11 +64,9 @@ if configuration_data["random_seed_for_environment"] is not -1:
 
 # Get individual size
 input_size = env.observation_space.shape[0]
-number_neurons = configuration_data["number_neurons"]
 output_size = env.action_space.shape[0]
-IND_SIZE = ctrnn.ContinuousTimeRNN.get_individual_size(input_size, number_neurons, output_size,
-                                                       configuration_data["optimize_y0"],
-                                                       configuration_data["optimize_state_boundaries"],)
+
+individual_size = brain_class.get_individual_size(input_size, output_size, configuration_data)
 
 creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 creator.create("Individual", list, typecode='b', fitness=creator.FitnessMax)
@@ -77,7 +78,7 @@ toolbox.register("map", futures.map)
 
 toolbox.register("evaluate", evalFitness)
 
-strategy = cma.Strategy(centroid=[0.0] * IND_SIZE, sigma=configuration_data["sigma"],
+strategy = cma.Strategy(centroid=[0.0] * individual_size, sigma=configuration_data["sigma"],
                         lambda_=configuration_data["population_size"])
 
 toolbox.register("generate", strategy.generate, creator.Individual)
@@ -102,7 +103,8 @@ if __name__ == "__main__":
     print("Time elapsed: %s" % (time.time() - startTime))
 
     # Create new directory to store data of current simulation run
-    directory = os.path.join('Simulation_Results', 'CTRNN', startDate)
+    subdirectory_name = configuration_data["neural_network_type"]
+    directory = os.path.join('Simulation_Results', subdirectory_name, startDate)
     os.makedirs(directory)
 
     # Save Configuration file as json
@@ -134,9 +136,13 @@ if __name__ == "__main__":
         write_file.write('Sigma: {:.2f}\n'.format(configuration_data["sigma"]))
         write_file.write('Number of runs per evaluation: {:d}\n'.format(configuration_data["number_fitness_runs"]))
         write_file.write('\n')
-        write_file.write('Genome Size: {:d}\n'.format(IND_SIZE))
+        write_file.write('Genome Size: {:d}\n'.format(individual_size))
         write_file.write('Inputs: {:d}\n'.format(input_size))
         write_file.write('Outputs: {:d}\n'.format(output_size))
+        write_file.write('\n')
+        write_file.write('Number of neurons in hidden layer 1: {:d}\n'.format(configuration_data["number_neurons_layer1"]))
+        write_file.write('Number of neurons in hidden layer 2: {:d}\n'.format(configuration_data["number_neurons_layer2"]))
+        write_file.write('\n')
 
         dash = '-' * 80
 
