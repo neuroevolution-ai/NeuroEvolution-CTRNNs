@@ -8,6 +8,9 @@ class ContinuousTimeRNN:
         optimize_y0 = config["optimize_y0"]
         delta_t = config["delta_t"]
         optimize_state_boundaries =  config["optimize_state_boundaries"]
+        self.parameter_perturbations = None
+        if 'parameter_perturbations' in config:
+            self.parameter_perturbations = config["parameter_perturbations"]
         clipping_range_min = config["clipping_range_min"]
         clipping_range_max =  config["clipping_range_max"]
         set_principle_diagonal_elements_of_W_negative = config["set_principle_diagonal_elements_of_W_negative"]
@@ -64,6 +67,9 @@ class ContinuousTimeRNN:
 
         # Euler forward discretization
         self.y = self.y + self.delta_t * dydt
+
+        if self.parameter_perturbations:
+            self.y = np.random.normal(self.y, self.parameter_perturbations)
 
         # Clip y to state boundaries
         for y_min, y_max in zip(self.clipping_range_min, self.clipping_range_max):

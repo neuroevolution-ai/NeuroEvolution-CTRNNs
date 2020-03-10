@@ -1,8 +1,9 @@
 {
-  "environment": "Hopper-v2",
-  "neural_network_type": "LNN",
+  "environment": "Walker2d-v2",
+  "neural_network_type": "CTRNN",
   "random_seed_for_environment": 0,
   "number_neurons": 30,
+  "parameter_perturbations": 0.001,
   "delta_t": 0.05,
   "optimize_state_boundaries": true,
   "clipping_range_max": 1.0,
