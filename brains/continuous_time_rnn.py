@@ -69,8 +69,6 @@ class ContinuousTimeRNN:
         for y_min, y_max in zip(self.clipping_range_min, self.clipping_range_max):
             self.y = np.clip(self.y, y_min, y_max)
 
-        self.y = np.clip(self.y, self.clipping_range_min, self.clipping_range_max)
-
         # Calculate outputs
         o = np.tanh(np.dot(self.y.T, self.T))
 
