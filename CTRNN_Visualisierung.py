@@ -8,25 +8,32 @@ import matplotlib.pyplot as plt
 import brains.continuous_time_rnn as ctrnn
 import brains.layered_nn as lnn
 import sys
+import argparse
 
 from deap import base
 from deap import creator
 
+parser = argparse.ArgumentParser(description='Visualize experiment results')
+parser.add_argument('--dir', metavar='dir', type=str, help='directory', default='2020-03-09_17-48-07')
+parser.add_argument('--type', metavar='type', type=str, help='directory', default='CTRNN')
+args = parser.parse_args()
 creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 creator.create("Individual", list, typecode='b', fitness=creator.FitnessMax)
 
-directory = '2020-03-05_07-51-21'
+directory = args.dir
+experiment_type = args.type
+
 
 # Load configuration file
-with open(os.path.join('Simulation_Results', 'LNN', directory, 'Configuration.json'), "r") as read_file:
+with open(os.path.join('Simulation_Results', experiment_type, directory, 'Configuration.json'), "r") as read_file:
     configuration_data = json.load(read_file)
 
 # Load hall of fame candidates
-with open(os.path.join('Simulation_Results', 'LNN', directory, 'HallOfFame.pickle'), "rb") as read_file:
+with open(os.path.join('Simulation_Results', experiment_type, directory, 'HallOfFame.pickle'), "rb") as read_file:
     hall_of_fame = pickle.load(read_file)
 
 # Load Log
-with open(os.path.join('Simulation_Results', 'LNN', directory, 'Log.json'), 'r') as read_file:
+with open(os.path.join('Simulation_Results', experiment_type, directory, 'Log.json'), 'r') as read_file:
     log = json.load(read_file)
 
 # Get individual from hall of fame
