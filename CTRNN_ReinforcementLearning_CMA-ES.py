@@ -1,4 +1,3 @@
-import mujoco_py
 import numpy as np
 import time
 import sys
@@ -106,6 +105,7 @@ if __name__ == "__main__":
     subdirectory_name = configuration_data["neural_network_type"]
     directory = os.path.join('Simulation_Results', subdirectory_name, startDate)
     os.makedirs(directory)
+    print("output directory: " + str(directory))
 
     # Save Configuration file as json
     with open(os.path.join(directory, 'Configuration.json'), 'w') as outfile:
