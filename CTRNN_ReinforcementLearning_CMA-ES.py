@@ -3,55 +3,18 @@ import time
 import sys
 import pickle
 import gym
-import pybullet_envs
 import json
 from datetime import datetime
 import os
 import brains.continuous_time_rnn as ctrnn
 import brains.layered_nn as lnn
 
-from deap import algorithms
-from deap import base
-from deap import creator
 from deap import tools
-from deap import cma
 from scoop import futures
 
+from Others.core import EpisodeRunner
+from Others.trainer_CMA_ES import TrainerCmaEs
 
-def evalFitness(individual):
-
-    # Create brain
-    brain = brain_class(input_size, output_size, individual, configuration_data)
-
-    fitness_current = 0
-    number_fitness_runs = configuration_data["number_fitness_runs"]
-
-    for i in range(number_fitness_runs):
-
-        ob = env.reset()
-        done = False
-        consecutive_non_movement = 0
-        while not done:
-
-            # Perform step of the brain simulation
-            action = brain.step(ob)
-            if discrete_actions:
-                action = np.argmax(action)
-            # Perform step of the environment simulation
-            ob, rew, done, info = env.step(action)
-
-            if configuration_data["environment"] == "BipedalWalker-v3":
-                if ob[2] < 0.0001:
-                    consecutive_non_movement = consecutive_non_movement + 1
-                    if consecutive_non_movement > 50:
-                        done = True
-                        rew = rew - 300
-                else:
-                    consecutive_non_movement = 0
-
-            fitness_current += rew
-
-    return fitness_current/number_fitness_runs,
 
 # Load configuration file
 with open("Configuration.json", "r") as read_file:
@@ -63,7 +26,7 @@ if configuration_data["neural_network_type"] == 'LNN':
 elif configuration_data["neural_network_type"] == 'CTRNN':
     brain_class = ctrnn.ContinuousTimeRNN
 else:
-    sys.exit()
+    raise RuntimeError("unknown neural_network_type: " + str(configuration_data["neural_network_type"]))
 
 env = gym.make(configuration_data["environment"])
 
@@ -82,36 +45,27 @@ else:
 
 individual_size = brain_class.get_individual_size(input_size, output_size, configuration_data)
 
-creator.create("FitnessMax", base.Fitness, weights=(1.0,))
-creator.create("Individual", list, typecode='b', fitness=creator.FitnessMax)
+ep_runner = EpisodeRunner(conf=configuration_data, discrete_actions=discrete_actions, brain_class=brain_class,
+                          input_size=input_size, output_size=output_size, env=env)
 
-toolbox = base.Toolbox()
-
-# Multiprocessing
-toolbox.register("map", futures.map)
-
-toolbox.register("evaluate", evalFitness)
-
-strategy = cma.Strategy(centroid=[0.0] * individual_size, sigma=configuration_data["sigma"],
-                        lambda_=configuration_data["population_size"])
-
-toolbox.register("generate", strategy.generate, creator.Individual)
-toolbox.register("update", strategy.update)
+if configuration_data["trainer_type"] == "CMA_ES":
+    trainer = TrainerCmaEs(map_func=futures.map, individual_size=individual_size,
+                           evalFitness=ep_runner.evalFitness, conf=configuration_data)
+else:
+    raise RuntimeError("unknown trainer_type: " + str(configuration_data["trainer_type"]))
 
 if __name__ == "__main__":
 
     startTime = time.time()
     startDate = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
-    hof = tools.HallOfFame(5)
     stats = tools.Statistics(lambda ind: ind.fitness.values)
     stats.register("avg", np.mean)
     stats.register("std", np.std)
     stats.register("min", np.min)
     stats.register("max", np.max)
 
-    pop, log = algorithms.eaGenerateUpdate(toolbox, ngen=configuration_data["number_generations"],
-                                           stats=stats, halloffame=hof)
+    pop, log = trainer.train(stats)
 
     # print elapsed time
     print("Time elapsed: %s" % (time.time() - startTime))
@@ -128,7 +82,7 @@ if __name__ == "__main__":
 
     # Save hall of fame individuals
     with open(os.path.join(directory, 'HallOfFame.pickle'), "wb") as fp:
-        pickle.dump(hof, fp)
+        pickle.dump(trainer.hof, fp)
 
     # Save Log
     with open(os.path.join(directory, 'Log.json'), 'w') as outfile:
