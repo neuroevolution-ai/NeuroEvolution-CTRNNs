@@ -14,8 +14,8 @@ from scoop import futures
 
 from Others.core import EpisodeRunner
 from Others.trainer_CMA_ES import TrainerCmaEs
+from Others.trainer_mu_plus_lambda import TrainerMuPlusLambda
 from Others.result_handler import ResultHandler
-
 
 # Load configuration file
 with open("Configuration.json", "r") as read_file:
@@ -52,11 +52,13 @@ ep_runner = EpisodeRunner(conf=configuration_data, discrete_actions=discrete_act
 if configuration_data["trainer_type"] == "CMA_ES":
     trainer = TrainerCmaEs(map_func=futures.map, individual_size=individual_size,
                            evalFitness=ep_runner.evalFitness, conf=configuration_data)
+elif configuration_data["trainer_type"] == "MU_LAMBDA":
+    trainer = TrainerMuPlusLambda(map_func=futures.map, individual_size=individual_size,
+                                  evalFitness=ep_runner.evalFitness, conf=configuration_data)
 else:
     raise RuntimeError("unknown trainer_type: " + str(configuration_data["trainer_type"]))
 
 if __name__ == "__main__":
-
     startTime = time.time()
     startDate = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
@@ -72,6 +74,10 @@ if __name__ == "__main__":
 
     # print elapsed time
     print("Time elapsed: %s" % (time.time() - startTime))
-    result_handler.write_result(hof=trainer.hof, log=log, time_elapsed=(time.time() - startTime))
-
-
+    result_handler.write_result(
+        hof=trainer.hof,
+        log=log,
+        time_elapsed=(time.time() - startTime),
+        output_size=output_size,
+        input_size=input_size,
+        individual_size=individual_size)

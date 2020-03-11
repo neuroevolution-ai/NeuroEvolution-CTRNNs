@@ -12,7 +12,7 @@ class ResultHandler(object):
         self.nn_type = nn_type
         self.configuration_data = configuration_data
 
-    def write_result(self, hof, log, time_elapsed):
+    def write_result(self, hof, log, time_elapsed, individual_size, input_size, output_size):
         # Create new directory to store data of current simulation run
         directory = os.path.join(self.base_path, self.nn_type, self.startDate)
         os.makedirs(directory)
