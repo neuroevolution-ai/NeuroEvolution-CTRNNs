@@ -10,7 +10,10 @@ git clone git@github.com:neuroevolution-ai/NeuroEvolution.git
 cd NeuroEvolution
 virtualenv ~/.venv/neuro --python=python3
 . ~/.venv/neuro/bin/activate
-LD_LIBRARY_PATH=$HOME/.mujoco/mujoco200/bin pip install mujoco-py scoop pybullet 'gym[all]' torch deap matplotlib
+pip install python3-tk scoop pybullet 'gym[all]' torch deap matplotlib
+
+# if mujoco is needed, also run
+LD_LIBRARY_PATH=$HOME/.mujoco/mujoco200/bin pip install mujoco-py 
 ```
 
 3. (optional) change configuration `nano Configuration.json`

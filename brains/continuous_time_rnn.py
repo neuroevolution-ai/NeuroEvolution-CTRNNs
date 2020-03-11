@@ -15,6 +15,7 @@ class ContinuousTimeRNN:
         clipping_range_max =  config["clipping_range_max"]
         set_principle_diagonal_elements_of_W_negative = config["set_principle_diagonal_elements_of_W_negative"]
         number_neurons = config["number_neurons"]
+        np.random.seed(config['random_seed_for_environment'])
 
         V_size = input_size * number_neurons
         W_size = number_neurons * number_neurons

@@ -30,14 +30,24 @@ def evalFitness(individual):
 
         ob = env.reset()
         done = False
-
+        consecutive_non_movement = 0
         while not done:
 
             # Perform step of the brain simulation
             action = brain.step(ob)
-
+            if discrete_actions:
+                action = np.argmax(action)
             # Perform step of the environment simulation
             ob, rew, done, info = env.step(action)
+
+            if configuration_data["environment"] == "BipedalWalker-v3":
+                if ob[2] < 0.0001:
+                    consecutive_non_movement = consecutive_non_movement + 1
+                    if consecutive_non_movement > 50:
+                        done = True
+                        rew = rew - 300
+                else:
+                    consecutive_non_movement = 0
 
             fitness_current += rew
 
@@ -63,7 +73,12 @@ if configuration_data["random_seed_for_environment"] is not -1:
 
 # Get individual size
 input_size = env.observation_space.shape[0]
-output_size = env.action_space.shape[0]
+if env.action_space.shape:
+    output_size = env.action_space.shape[0]
+    discrete_actions = False
+else:
+    output_size = env.action_space.n
+    discrete_actions = True
 
 individual_size = brain_class.get_individual_size(input_size, output_size, configuration_data)
 
