@@ -17,6 +17,7 @@ from deap import creator
 parser = argparse.ArgumentParser(description='Visualize experiment results')
 parser.add_argument('--dir', metavar='dir', type=str, help='directory', default='2020-03-09_17-48-07')
 parser.add_argument('--type', metavar='type', type=str, help='directory', default='CTRNN')
+parser.add_argument('--hof', metavar='type', type=int, help='how many HallOfFame Individuals should be displayed?', default='1')
 args = parser.parse_args()
 creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 creator.create("Individual", list, typecode='b', fitness=creator.FitnessMax)
@@ -50,6 +51,7 @@ if env.action_space.shape:
     discrete_actions = False
 else:
     output_size = env.action_space.n
+    # todo: make discrete actions an explicit option in configuratio
     discrete_actions = True
 
 # Get brain class
@@ -64,7 +66,7 @@ env.render()
 env.reset()
 
 
-for individual in hall_of_fame:
+for individual in hall_of_fame[:args.hof]:
 
     fitness_current = 0
     ob = env.reset()
