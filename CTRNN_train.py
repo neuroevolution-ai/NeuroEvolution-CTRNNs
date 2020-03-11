@@ -51,10 +51,13 @@ ep_runner = EpisodeRunner(conf=configuration_data, discrete_actions=discrete_act
 
 if configuration_data["trainer_type"] == "CMA_ES":
     trainer = TrainerCmaEs(map_func=futures.map, individual_size=individual_size,
-                           evalFitness=ep_runner.evalFitness, conf=configuration_data)
+                           evalFitness=ep_runner.evalFitness, conf=configuration_data,
+                           )
 elif configuration_data["trainer_type"] == "MU_LAMBDA":
     trainer = TrainerMuPlusLambda(map_func=futures.map, individual_size=individual_size,
-                                  evalFitness=ep_runner.evalFitness, conf=configuration_data)
+                                  evalFitness=ep_runner.evalFitness,
+                                  population_size=configuration_data["population_size"],
+                                  trainer_parameters=configuration_data["MU_LAMBDA_parameters"], )
 else:
     raise RuntimeError("unknown trainer_type: " + str(configuration_data["trainer_type"]))
 
@@ -70,7 +73,7 @@ if __name__ == "__main__":
     result_handler = ResultHandler(startDate=startDate,
                                    nn_type=configuration_data["neural_network_type"],
                                    configuration_data=configuration_data)
-    pop, log = trainer.train(stats)
+    pop, log = trainer.train(stats, number_generations=configuration_data["number_generations"])
 
     # print elapsed time
     print("Time elapsed: %s" % (time.time() - startTime))
@@ -81,3 +84,4 @@ if __name__ == "__main__":
         output_size=output_size,
         input_size=input_size,
         individual_size=individual_size)
+    print("done")

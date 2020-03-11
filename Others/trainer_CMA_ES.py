@@ -6,7 +6,8 @@ from deap import algorithms
 
 
 class TrainerCmaEs(object):
-    def __init__(self, evalFitness, individual_size, conf, map_func=map, hof=tools.HallOfFame(5)):
+    def __init__(self, evalFitness, individual_size, conf, map_func=map, hof=tools.HallOfFame(5),
+                 trainer_parameters=None):
         self.toolbox = toolbox = base.Toolbox()
         self.conf = conf
         self.hof = hof
@@ -20,6 +21,6 @@ class TrainerCmaEs(object):
         toolbox.register("generate", strategy.generate, creator.Individual)
         toolbox.register("update", strategy.update)
 
-    def train(self, stats):
-        return algorithms.eaGenerateUpdate(self.toolbox, ngen=self.conf["number_generations"],
+    def train(self, stats, number_generations):
+        return algorithms.eaGenerateUpdate(self.toolbox, ngen=number_generations,
                                            stats=stats, halloffame=self.hof)
