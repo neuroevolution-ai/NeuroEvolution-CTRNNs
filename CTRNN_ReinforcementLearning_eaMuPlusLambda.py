@@ -3,17 +3,59 @@ import time
 import sys
 import pickle
 import gym
+import pybullet_envs
 import json
 from datetime import datetime
 import os
 import brains.continuous_time_rnn as ctrnn
 import brains.layered_nn as lnn
 
+from deap import algorithms
+from deap import base
+from deap import creator
 from deap import tools
+from deap import cma
 from scoop import futures
+import random
 
-from Others.core import EpisodeRunner
-from Others.trainer_CMA_ES import TrainerCmaEs
+def evalFitness(individual):
+
+    # Create brain
+    brain = brain_class(input_size, output_size, individual, configuration_data)
+
+    fitness_current = 0
+    number_fitness_runs = configuration_data["number_fitness_runs"]
+
+    for i in range(number_fitness_runs):
+
+        ob = env.reset()
+        done = False
+        consecutive_non_movement = 0
+        while not done:
+
+            # Perform step of the brain simulation
+            action = brain.step(ob)
+            if discrete_actions:
+                action = np.argmax(action)
+            # Perform step of the environment simulation
+            ob, rew, done, info = env.step(action)
+
+            if configuration_data["environment"] == "BipedalWalker-v3":
+                if ob[2] < 0.0001:
+                    consecutive_non_movement = consecutive_non_movement + 1
+                    if consecutive_non_movement > 50:
+                        done = True
+                        rew = rew - 300
+                else:
+                    consecutive_non_movement = 0
+
+            fitness_current += rew
+
+    return fitness_current/number_fitness_runs,
+
+
+def sel_elitist_tournament(individuals, mu,  k_elitist, k_tournament, tournsize):
+    return tools.selBest(individuals, k_elitist) + tools.selTournament(individuals, k_tournament, tournsize=tournsize)
 
 
 # Load configuration file
@@ -26,7 +68,7 @@ if configuration_data["neural_network_type"] == 'LNN':
 elif configuration_data["neural_network_type"] == 'CTRNN':
     brain_class = ctrnn.ContinuousTimeRNN
 else:
-    raise RuntimeError("unknown neural_network_type: " + str(configuration_data["neural_network_type"]))
+    sys.exit()
 
 env = gym.make(configuration_data["environment"])
 
@@ -45,27 +87,51 @@ else:
 
 individual_size = brain_class.get_individual_size(input_size, output_size, configuration_data)
 
-ep_runner = EpisodeRunner(conf=configuration_data, discrete_actions=discrete_actions, brain_class=brain_class,
-                          input_size=input_size, output_size=output_size, env=env)
+creator.create("FitnessMax", base.Fitness, weights=(1.0,))
+creator.create("Individual", list, typecode='b', fitness=creator.FitnessMax)
+toolbox = base.Toolbox()
+toolbox.register("indices", np.random.uniform, -20, 20, individual_size)
 
-if configuration_data["trainer_type"] == "CMA_ES":
-    trainer = TrainerCmaEs(map_func=futures.map, individual_size=individual_size,
-                           evalFitness=ep_runner.evalFitness, conf=configuration_data)
-else:
-    raise RuntimeError("unknown trainer_type: " + str(configuration_data["trainer_type"]))
+toolbox.register("individual", tools.initIterate, creator.Individual,toolbox.indices)
+
+
+# Multiprocessing
+toolbox.register("map", futures.map)
+
+toolbox.register("evaluate", evalFitness)
+
+toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+toolbox.register("mate", tools.cxOnePoint)
+toolbox.register("mutate", tools.mutGaussian, mu=0.0, sigma=5, indpb=0.2)
+
+toolbox.register("select",
+                 sel_elitist_tournament,
+                 k_elitist=int(0.1*configuration_data["population_size"]),
+                 k_tournament=configuration_data["population_size"] - int(0.1*configuration_data["population_size"]),
+                 tournsize=2)
+
 
 if __name__ == "__main__":
 
     startTime = time.time()
     startDate = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
+    hof = tools.HallOfFame(5)
     stats = tools.Statistics(lambda ind: ind.fitness.values)
     stats.register("avg", np.mean)
     stats.register("std", np.std)
     stats.register("min", np.min)
     stats.register("max", np.max)
-
-    pop, log = trainer.train(stats)
+    pop = toolbox.population(n=int(configuration_data["population_size"]*0.4))
+    pop, log = algorithms.eaMuPlusLambda(pop,
+                                         toolbox = toolbox,
+                                         ngen=configuration_data["number_generations"],
+                                         stats=stats,
+                                         mu=int(configuration_data["population_size"]*.5),
+                                         lambda_=int(configuration_data["population_size"]*1.),
+                                         cxpb=0.2, mutpb=0.8,
+                                         halloffame=hof
+                                         )
 
     # print elapsed time
     print("Time elapsed: %s" % (time.time() - startTime))
@@ -82,7 +148,7 @@ if __name__ == "__main__":
 
     # Save hall of fame individuals
     with open(os.path.join(directory, 'HallOfFame.pickle'), "wb") as fp:
-        pickle.dump(trainer.hof, fp)
+        pickle.dump(hof, fp)
 
     # Save Log
     with open(os.path.join(directory, 'Log.json'), 'w') as outfile:
