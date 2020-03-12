@@ -31,7 +31,7 @@ class TrainerMuPlusLambda(object):
         toolbox.register("individual", tools.initIterate, creator.Individual, toolbox.indices)
 
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)
-        toolbox.register("mate", tools.cxOnePoint)
+        toolbox.register("mate", tools.cxTwoPoint)
         toolbox.register("mutate", tools.mutGaussian,
                          mu=0.0,
                          sigma=self.conf["mutation_Gaussian_sigma"],
