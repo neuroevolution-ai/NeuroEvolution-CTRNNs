@@ -2,7 +2,7 @@ from deap import base
 from deap import creator
 from deap import tools
 from deap import cma
-from deap import algorithms
+from Others import algorithms
 import numpy as np
 
 
