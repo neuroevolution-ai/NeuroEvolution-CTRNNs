@@ -13,7 +13,7 @@
     "mutpb": 0.8
   },
   "random_seed_for_environment": 0,
-  "number_neurons": 15,
+  "number_neurons": 25,
   "parameter_perturbations": 0.01,
   "delta_t": 0.05,
   "optimize_state_boundaries": true,
@@ -22,7 +22,7 @@
   "optimize_y0": true,
   "set_principle_diagonal_elements_of_W_negative": true,
   "population_size": 150,
-  "number_generations": 400,
+  "number_generations": 2,
   "sigma": 1.0,
   "number_fitness_runs": 1,
   "number_neurons_layer1": 32,
