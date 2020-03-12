@@ -1,0 +1,32 @@
+Gym environment: BipedalWalker-v3
+Random seed for environment: 0
+Number of neurons: 15
+Time step (delta_t): 0.050
+Optimize state boundaries: True
+Clipping range max: 1.00
+Clipping range min: -1.00
+Optimize initial states y0: True
+Set principal elements of W to negative: True
+Population size: 250
+Number of Generations: 5
+Sigma: 1.00
+Number of runs per evaluation: 1
+
+Genome Size: 690
+Inputs: 24
+Outputs: 4
+
+Number of neurons in hidden layer 1: 32
+Number of neurons in hidden layer 2: 16
+
+--------------------------------------------------------------------------------
+gen     nevals      avg             std             min             max             
+--------------------------------------------------------------------------------
+0       100         -195.89         103.35          -428.20         -100.25         
+1       250         -153.53         83.35           -340.58         -100.25         
+2       250         -119.02         46.93           -340.58         -100.25         
+3       250         -106.51         14.89           -314.16         -99.91          
+4       250         -104.11         6.08            -171.62         -98.87          
+5       250         -103.33         3.63            -119.49         -98.87          
+
+Time elapsed: 23.6720 seconds

@@ -7,14 +7,14 @@
     "lambda": 1.0,
     "initial_gene_range": 10,
     "mutation_Gaussian_sigma": 5.0,
-    "mutation_Gaussian_indpb": 0.1,
+    "mutation_Gaussian_indpb": 0.2,
     "elitist_ratio": 0.1,
-    "tournsize": 2,
-    "mutpb": 0.9
+    "tournsize": 3,
+    "mutpb": 0.8
   },
   "random_seed_for_environment": 0,
   "number_neurons": 15,
-  "parameter_perturbations": 0.001,
+  "parameter_perturbations": 0.01,
   "delta_t": 0.05,
   "optimize_state_boundaries": true,
   "clipping_range_max": 1.0,
