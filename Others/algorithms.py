@@ -111,7 +111,7 @@ def eaMuPlusLambda(population, toolbox, mu, lambda_, cxpb, mutpb, ngen, checkpoi
     variation.
     """
     if checkpoint:
-        cp = get_checkpoint()
+        cp = get_checkpoint(checkpoint)
         population = cp["population"]
         start_gen = cp["generation"]
         logbook = cp["logbook"]
