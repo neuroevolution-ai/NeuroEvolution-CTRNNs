@@ -65,7 +65,6 @@ else:
 env.render()
 env.reset()
 
-
 for individual in hall_of_fame[:args.hof]:
 
     fitness_current = 0
@@ -77,7 +76,6 @@ for individual in hall_of_fame[:args.hof]:
     consecutive_non_movement = 0
     # Test fitness through simulation
     while not done:
-
         # Perform step of the brain simulation
         action = brain.step(ob)
 

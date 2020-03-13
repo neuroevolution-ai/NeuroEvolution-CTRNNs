@@ -15,6 +15,7 @@ from scoop import futures
 from Others.trainer_CMA_ES import TrainerCmaEs
 from Others.trainer_mu_plus_lambda import TrainerMuPlusLambda
 from Others.result_handler import ResultHandler
+import argparse
 
 
 class EpisodeRunner(object):
@@ -55,6 +56,14 @@ class EpisodeRunner(object):
                         consecutive_non_movement = 0
                 fitness_current += rew
         return fitness_current / number_fitness_runs,
+
+
+parser = argparse.ArgumentParser(description='train CTRNN')
+parser.add_argument('--from-checkpoint', metavar='dir', type=str,
+                    help='continues training from a checkpoint', default=None)
+parser.add_argument('--configuration', metavar='dir', type=str,
+                    help='use an alternative configuration file', default='Configuration.json')
+args = parser.parse_args()
 
 
 # Load configuration file
@@ -113,7 +122,8 @@ if __name__ == "__main__":
     result_handler = ResultHandler(startDate=startDate,
                                    nn_type=configuration_data["neural_network_type"],
                                    configuration_data=configuration_data)
-    pop, log = trainer.train(stats, number_generations=configuration_data["number_generations"])
+    pop, log = trainer.train(stats, number_generations=configuration_data["number_generations"],
+                             checkpoint=args.from_checkpoint)
 
     # print elapsed time
     print("Time elapsed: %s" % (time.time() - startTime))

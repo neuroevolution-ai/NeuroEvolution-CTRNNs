@@ -31,7 +31,16 @@ class TrainerMuPlusLambda(object):
         toolbox.register("individual", tools.initIterate, creator.Individual, toolbox.indices)
 
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)
-        toolbox.register("mate", tools.cxTwoPoint)
+
+        if self.conf["mate"] == "cxOnePoint":
+            toolbox.register("mate", tools.cxOnePoint)
+        elif self.conf["mate"] == "cxTwoPoint":
+            toolbox.register("mate", tools.cxTwoPoint)
+        elif self.conf["mate"] == "cxUniform":
+            toolbox.register("mate", tools.cxUniform, self.conf["mate_indpb"])
+        else:
+            raise RuntimeError("unknown mate function")
+
         toolbox.register("mutate", tools.mutGaussian,
                          mu=0.0,
                          sigma=self.conf["mutation_Gaussian_sigma"],
@@ -44,7 +53,7 @@ class TrainerMuPlusLambda(object):
                              self.conf["elitist_ratio"] * population_size),
                          tournsize=self.conf["tournsize"])
 
-    def train(self, stats, number_generations):
+    def train(self, stats, number_generations, checkpoint=None):
         pop = self.toolbox.population(n=int(self.population_size))
         return algorithms.eaMuPlusLambda(pop,
                                          toolbox=self.toolbox,
@@ -52,6 +61,7 @@ class TrainerMuPlusLambda(object):
                                          stats=stats,
                                          mu=int(self.population_size * self.conf["mu"]),
                                          lambda_=int(self.population_size * self.conf["lambda"]),
-                                         cxpb=1-self.conf["mutpb"], mutpb=self.conf["mutpb"],
-                                         halloffame=self.hof
+                                         cxpb=1.0-self.conf["mutpb"], mutpb=self.conf["mutpb"],
+                                         halloffame=self.hof,
+                                         checkpoint=checkpoint
                                          )

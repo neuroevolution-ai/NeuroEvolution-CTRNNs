@@ -2,7 +2,9 @@
 import random
 
 from deap import tools
-
+import pickle
+from pathlib import Path
+import os
 
 def varOr(population, toolbox, lambda_, cxpb, mutpb):
     """Part of an evolutionary algorithm applying only the variation part
@@ -62,7 +64,7 @@ def varOr(population, toolbox, lambda_, cxpb, mutpb):
 
 
 
-def eaMuPlusLambda(population, toolbox, mu, lambda_, cxpb, mutpb, ngen,
+def eaMuPlusLambda(population, toolbox, mu, lambda_, cxpb, mutpb, ngen, checkpoint=None, FREQ=10,
                    stats=None, halloffame=None, verbose=__debug__):
     """This is the :math:`(\mu + \lambda)` evolutionary algorithm.
 
@@ -110,25 +112,34 @@ def eaMuPlusLambda(population, toolbox, mu, lambda_, cxpb, mutpb, ngen,
     registered in the toolbox. This algorithm uses the :func:`varOr`
     variation.
     """
-    logbook = tools.Logbook()
-    logbook.header = ['gen', 'nevals'] + (stats.fields if stats else [])
+    if checkpoint:
+        with open(checkpoint, "rb") as cp_file:
+            cp = pickle.load(cp_file)
+        population = cp["population"]
+        start_gen = cp["generation"]
+        logbook = cp["logbook"]
+        random.setstate(cp["rndstate"])
+    else:
+        start_gen = 0
+        logbook = tools.Logbook()
+        logbook.header = ['gen', 'nevals'] + (stats.fields if stats else [])
 
-    # Evaluate the individuals with an invalid fitness
-    invalid_ind = [ind for ind in population if not ind.fitness.valid]
-    fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
-    for ind, fit in zip(invalid_ind, fitnesses):
-        ind.fitness.values = fit
+        # Evaluate the individuals with an invalid fitness
+        invalid_ind = [ind for ind in population if not ind.fitness.valid]
+        fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
+        for ind, fit in zip(invalid_ind, fitnesses):
+            ind.fitness.values = fit
 
-    if halloffame is not None:
-        halloffame.update(population)
+        if halloffame is not None:
+            halloffame.update(population)
 
-    record = stats.compile(population) if stats is not None else {}
-    logbook.record(gen=0, nevals=len(invalid_ind), **record)
-    if verbose:
-        print(logbook.stream)
+        record = stats.compile(population) if stats is not None else {}
+        logbook.record(gen=0, nevals=len(invalid_ind), **record)
+        if verbose:
+            print(logbook.stream)
 
     # Begin the generational process
-    for gen in range(1, ngen + 1):
+    for gen in range(start_gen, ngen + 1):
         # Vary the population
         offspring = varOr(population, toolbox, lambda_, cxpb, mutpb)
 
@@ -151,4 +162,14 @@ def eaMuPlusLambda(population, toolbox, mu, lambda_, cxpb, mutpb, ngen,
         if verbose:
             print(logbook.stream)
 
+        if gen % FREQ == 0:
+            # Fill the dictionary using the dict(key=value[, ...]) constructor
+            cp = dict(population=population, generation=gen, halloffame=halloffame,
+                      logbook=logbook, rndstate=random.getstate())
+            cp_dir = "checkpoints"
+            Path(cp_dir).mkdir(parents=True, exist_ok=True)
+            filename = os.path.join(cp_dir, "checkpoint_"+str(gen)+".pkl")
+            print("writing checkpoint " + filename)
+            with open(filename, "wb") as cp_file:
+                pickle.dump(cp, cp_file)
     return population, logbook
