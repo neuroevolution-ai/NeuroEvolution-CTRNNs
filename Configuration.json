@@ -10,7 +10,7 @@
     "mutation_Gaussian_indpb": 0.1,
     "elitist_ratio": 0.00,
     "tournsize": 6,
-    "mutpb": 0.9,
+    "mutpb": 0.99,
     "mate": "cxTwoPoint",
     "mate_indpb": 0.05
   },
@@ -24,7 +24,7 @@
   "optimize_y0": true,
   "set_principle_diagonal_elements_of_W_negative": true,
   "population_size": 250,
-  "number_generations": 300,
+  "number_generations": 150,
   "sigma": 1.0,
   "number_fitness_runs": 1,
   "number_neurons_layer1": 32,
