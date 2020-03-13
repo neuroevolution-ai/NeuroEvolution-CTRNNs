@@ -7,7 +7,8 @@ import numpy as np
 
 
 def sel_elitist_tournament(individuals, mu, k_elitist, k_tournament, tournsize):
-    return tools.selBest(individuals, k_elitist) + tools.selTournament(individuals, k_tournament, tournsize=tournsize)
+    return tools.selBest(individuals, int(k_elitist*mu)) + \
+           tools.selTournament(individuals, int(k_tournament * mu), tournsize=tournsize)
 
 
 class TrainerMuPlusLambda(object):
@@ -48,9 +49,9 @@ class TrainerMuPlusLambda(object):
 
         toolbox.register("select",
                          sel_elitist_tournament,
-                         k_elitist=int(self.conf["elitist_ratio"] * population_size),
-                         k_tournament=population_size - int(
-                             self.conf["elitist_ratio"] * population_size),
+                         k_elitist=int(self.conf["elitist_ratio"]),
+                         k_tournament=1.0 - int(
+                             self.conf["elitist_ratio"]),
                          tournsize=self.conf["tournsize"])
 
     def train(self, stats, number_generations, checkpoint=None):
