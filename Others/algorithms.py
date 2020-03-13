@@ -1,10 +1,10 @@
-
 import random
 
 from deap import tools
 import pickle
 from pathlib import Path
 import os
+
 
 def varOr(population, toolbox, lambda_, cxpb, mutpb):
     """Part of an evolutionary algorithm applying only the variation part
@@ -46,7 +46,7 @@ def varOr(population, toolbox, lambda_, cxpb, mutpb):
     offspring = []
     for _ in range(lambda_):
         op_choice = random.random()
-        if op_choice < cxpb:            # Apply crossover
+        if op_choice < cxpb:  # Apply crossover
             ind1, ind2 = list(map(toolbox.clone, random.sample(population, 2)))
             ind1, ind2 = toolbox.mate(ind1, ind2)
             del ind1.fitness.values
@@ -56,12 +56,10 @@ def varOr(population, toolbox, lambda_, cxpb, mutpb):
             ind, = toolbox.mutate(ind)
             del ind.fitness.values
             offspring.append(ind)
-        else:                           # Apply reproduction
+        else:  # Apply reproduction
             offspring.append(random.choice(population))
 
     return offspring
-
-
 
 
 def eaMuPlusLambda(population, toolbox, mu, lambda_, cxpb, mutpb, ngen, checkpoint=None, FREQ=10,
@@ -166,10 +164,92 @@ def eaMuPlusLambda(population, toolbox, mu, lambda_, cxpb, mutpb, ngen, checkpoi
             # Fill the dictionary using the dict(key=value[, ...]) constructor
             cp = dict(population=population, generation=gen, halloffame=halloffame,
                       logbook=logbook, rndstate=random.getstate())
-            cp_dir = "checkpoints"
-            Path(cp_dir).mkdir(parents=True, exist_ok=True)
-            filename = os.path.join(cp_dir, "checkpoint_"+str(gen)+".pkl")
-            print("writing checkpoint " + filename)
-            with open(filename, "wb") as cp_file:
-                pickle.dump(cp, cp_file)
+            _write_checkpoint(cp, gen)
     return population, logbook
+
+
+def eaGenerateUpdate(toolbox, ngen, halloffame=None, stats=None,
+                     verbose=__debug__, checkpoint=None, FREQ=10):
+    """This is algorithm implements the ask-tell model proposed in
+    [Colette2010]_, where ask is called `generate` and tell is called `update`.
+
+    :param toolbox: A :class:`~deap.base.Toolbox` that contains the evolution
+                    operators.
+    :param ngen: The number of generation.
+    :param stats: A :class:`~deap.tools.Statistics` object that is updated
+                  inplace, optional.
+    :param halloffame: A :class:`~deap.tools.HallOfFame` object that will
+                       contain the best individuals, optional.
+    :param verbose: Whether or not to log the statistics.
+    :returns: The final population
+    :returns: A class:`~deap.tools.Logbook` with the statistics of the
+              evolution
+
+    The algorithm generates the individuals using the :func:`toolbox.generate`
+    function and updates the generation method with the :func:`toolbox.update`
+    function. It returns the optimized population and a
+    :class:`~deap.tools.Logbook` with the statistics of the evolution. The
+    logbook will contain the generation number, the number of evaluations for
+    each generation and the statistics if a :class:`~deap.tools.Statistics` is
+    given as argument. The pseudocode goes as follow ::
+
+        for g in range(ngen):
+            population = toolbox.generate()
+            evaluate(population)
+            toolbox.update(population)
+
+    .. [Colette2010] Collette, Y., N. Hansen, G. Pujol, D. Salazar Aponte and
+       R. Le Riche (2010). On Object-Oriented Programming of Optimizers -
+       Examples in Scilab. In P. Breitkopf and R. F. Coelho, eds.:
+       Multidisciplinary Design Optimization in Computational Mechanics,
+       Wiley, pp. 527-565;
+
+    """
+
+    population = None
+
+    if checkpoint:
+        with open(checkpoint, "rb") as cp_file:
+            cp = pickle.load(cp_file)
+        start_gen = cp["generation"]
+        logbook = cp["logbook"]
+        random.setstate(cp["rndstate"])
+    else:
+        start_gen = 0
+        logbook = tools.Logbook()
+        logbook.header = ['gen', 'nevals'] + (stats.fields if stats else [])
+
+    for gen in range(start_gen, ngen + 1):
+        # Generate a new population
+        population = toolbox.generate()
+        # Evaluate the individuals
+        fitnesses = toolbox.map(toolbox.evaluate, population)
+        for ind, fit in zip(population, fitnesses):
+            ind.fitness.values = fit
+
+        if halloffame is not None:
+            halloffame.update(population)
+
+        # Update the strategy with the evaluated individuals
+        toolbox.update(population)
+
+        record = stats.compile(population) if stats is not None else {}
+        logbook.record(gen=gen, nevals=len(population), **record)
+        if verbose:
+            print(logbook.stream)
+
+        if gen % FREQ == 0:
+            # Fill the dictionary using the dict(key=value[, ...]) constructor
+            cp = dict(population=population, generation=gen, halloffame=halloffame,
+                      logbook=logbook, rndstate=random.getstate(), strategy=toolbox.strategy)
+            _write_checkpoint(cp, gen)
+    return population, logbook
+
+
+def _write_checkpoint(data, generation):
+    cp_dir = "checkpoints"
+    Path(cp_dir).mkdir(parents=True, exist_ok=True)
+    filename = os.path.join(cp_dir, "checkpoint_" + str(generation) + ".pkl")
+    print("writing checkpoint " + filename)
+    with open(filename, "wb") as cp_file:
+        pickle.dump(data, cp_file)

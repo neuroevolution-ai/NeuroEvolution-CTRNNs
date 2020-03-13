@@ -12,7 +12,7 @@ def sel_elitist_tournament(individuals, mu, k_elitist, k_tournament, tournsize):
 
 class TrainerMuPlusLambda(object):
     def __init__(self, evalFitness, individual_size, trainer_parameters, population_size, map_func=map,
-                 hof=tools.HallOfFame(5)):
+                 hof=tools.HallOfFame(5), checkpoint=None):
         self.toolbox = toolbox = base.Toolbox()
         self.conf = trainer_parameters
         self.hof = hof

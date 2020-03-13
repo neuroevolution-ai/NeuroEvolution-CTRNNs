@@ -101,12 +101,14 @@ ep_runner = EpisodeRunner(conf=configuration_data, discrete_actions=discrete_act
 if configuration_data["trainer_type"] == "CMA_ES":
     trainer = TrainerCmaEs(map_func=futures.map, individual_size=individual_size,
                            evalFitness=ep_runner.evalFitness, conf=configuration_data,
+                           checkpoint=args.from_checkpoint
                            )
 elif configuration_data["trainer_type"] == "MU_LAMBDA":
     trainer = TrainerMuPlusLambda(map_func=futures.map, individual_size=individual_size,
                                   evalFitness=ep_runner.evalFitness,
                                   population_size=configuration_data["population_size"],
-                                  trainer_parameters=configuration_data["MU_LAMBDA_parameters"], )
+                                  trainer_parameters=configuration_data["MU_LAMBDA_parameters"],
+                                  checkpoint=args.from_checkpoint)
 else:
     raise RuntimeError("unknown trainer_type: " + str(configuration_data["trainer_type"]))
 
