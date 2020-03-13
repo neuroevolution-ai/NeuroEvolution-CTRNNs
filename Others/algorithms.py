@@ -111,8 +111,7 @@ def eaMuPlusLambda(population, toolbox, mu, lambda_, cxpb, mutpb, ngen, checkpoi
     variation.
     """
     if checkpoint:
-        with open(checkpoint, "rb") as cp_file:
-            cp = pickle.load(cp_file)
+        cp = get_checkpoint()
         population = cp["population"]
         start_gen = cp["generation"]
         logbook = cp["logbook"]
@@ -136,32 +135,25 @@ def eaMuPlusLambda(population, toolbox, mu, lambda_, cxpb, mutpb, ngen, checkpoi
         if verbose:
             print(logbook.stream)
 
-    # Begin the generational process
     for gen in range(start_gen, ngen + 1):
-        # Vary the population
         offspring = varOr(population, toolbox, lambda_, cxpb, mutpb)
 
-        # Evaluate the individuals with an invalid fitness
         invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
         fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
         for ind, fit in zip(invalid_ind, fitnesses):
             ind.fitness.values = fit
 
-        # Update the hall of fame with the generated individuals
         if halloffame is not None:
             halloffame.update(offspring)
 
-        # Select the next generation population
         population[:] = toolbox.select(population + offspring, mu)
 
-        # Update the statistics with the new population
         record = stats.compile(population) if stats is not None else {}
         logbook.record(gen=gen, nevals=len(invalid_ind), **record)
         if verbose:
             print(logbook.stream)
 
         if gen % FREQ == 0:
-            # Fill the dictionary using the dict(key=value[, ...]) constructor
             cp = dict(population=population, generation=gen, halloffame=halloffame,
                       logbook=logbook, rndstate=random.getstate())
             _write_checkpoint(cp, gen)
@@ -209,8 +201,7 @@ def eaGenerateUpdate(toolbox, ngen, halloffame=None, stats=None,
     population = None
 
     if checkpoint:
-        with open(checkpoint, "rb") as cp_file:
-            cp = pickle.load(cp_file)
+        cp = get_checkpoint(checkpoint)
         start_gen = cp["generation"]
         logbook = cp["logbook"]
         random.setstate(cp["rndstate"])
@@ -220,9 +211,7 @@ def eaGenerateUpdate(toolbox, ngen, halloffame=None, stats=None,
         logbook.header = ['gen', 'nevals'] + (stats.fields if stats else [])
 
     for gen in range(start_gen, ngen + 1):
-        # Generate a new population
         population = toolbox.generate()
-        # Evaluate the individuals
         fitnesses = toolbox.map(toolbox.evaluate, population)
         for ind, fit in zip(population, fitnesses):
             ind.fitness.values = fit
@@ -230,7 +219,6 @@ def eaGenerateUpdate(toolbox, ngen, halloffame=None, stats=None,
         if halloffame is not None:
             halloffame.update(population)
 
-        # Update the strategy with the evaluated individuals
         toolbox.update(population)
 
         record = stats.compile(population) if stats is not None else {}
@@ -239,7 +227,6 @@ def eaGenerateUpdate(toolbox, ngen, halloffame=None, stats=None,
             print(logbook.stream)
 
         if gen % FREQ == 0:
-            # Fill the dictionary using the dict(key=value[, ...]) constructor
             cp = dict(population=population, generation=gen, halloffame=halloffame,
                       logbook=logbook, rndstate=random.getstate(), strategy=toolbox.strategy)
             _write_checkpoint(cp, gen)
@@ -252,4 +239,11 @@ def _write_checkpoint(data, generation):
     filename = os.path.join(cp_dir, "checkpoint_" + str(generation) + ".pkl")
     print("writing checkpoint " + filename)
     with open(filename, "wb") as cp_file:
-        pickle.dump(data, cp_file)
+        pickle.dump(data, cp_file, protocol=pickle.HIGHEST_PROTOCOL, fix_imports=False)
+
+
+def get_checkpoint(checkpoint):
+    with open(checkpoint, "rb") as cp_file:
+        cp = pickle.load(cp_file, fix_imports=False)
+    return cp
+
