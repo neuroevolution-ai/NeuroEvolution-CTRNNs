@@ -15,6 +15,7 @@ class ContinuousTimeRNN:
         clipping_range_max =  config["clipping_range_max"]
         set_principle_diagonal_elements_of_W_negative = config["set_principle_diagonal_elements_of_W_negative"]
         number_neurons = config["number_neurons"]
+        np.random.seed(config['random_seed_for_environment'])
 
         V_size = input_size * number_neurons
         W_size = number_neurons * number_neurons
@@ -72,8 +73,7 @@ class ContinuousTimeRNN:
             self.y = np.random.normal(self.y, self.parameter_perturbations)
 
         # Clip y to state boundaries
-        for y_min, y_max in zip(self.clipping_range_min, self.clipping_range_max):
-            self.y = np.clip(self.y, y_min, y_max)
+        self.y = np.clip(self.y, self.clipping_range_min, self.clipping_range_max)
 
         # Calculate outputs
         o = np.tanh(np.dot(self.y.T, self.T))
