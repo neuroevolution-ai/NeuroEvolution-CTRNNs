@@ -38,7 +38,7 @@ class TrainerMuPlusLambda(object):
         elif self.conf["mate"] == "cxTwoPoint":
             toolbox.register("mate", tools.cxTwoPoint)
         elif self.conf["mate"] == "cxUniform":
-            toolbox.register("mate", tools.cxUniform, self.conf["mate_indpb"])
+            toolbox.register("mate", tools.cxUniform, indpb=self.conf["mate_indpb"])
         else:
             raise RuntimeError("unknown mate function")
 
