@@ -46,7 +46,7 @@ class EpisodeRunner(object):
                     action = np.argmax(action)
                 # Perform step of the environment simulation
                 ob, rew, done, info = self.env.step(action)
-                if self.conf["environment"] == "BipedalWalker-v3":
+                if configuration_data["environment"].startswith("BipedalWalker"):
                     if ob[2] < 0.0001:
                         consecutive_non_movement = consecutive_non_movement + 1
                         if consecutive_non_movement > 50:
