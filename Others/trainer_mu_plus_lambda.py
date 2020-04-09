@@ -4,6 +4,8 @@ from deap import tools
 from deap import cma
 from Others import algorithms
 import numpy as np
+import random
+from functools import partial
 
 
 def sel_elitist_tournament(individuals, mu, k_elitist, k_tournament, tournsize):
@@ -33,19 +35,37 @@ class TrainerMuPlusLambda(object):
 
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
-        if self.conf["mate"] == "cxOnePoint":
-            toolbox.register("mate", tools.cxOnePoint)
-        elif self.conf["mate"] == "cxTwoPoint":
-            toolbox.register("mate", tools.cxTwoPoint)
-        elif self.conf["mate"] == "cxUniform":
-            toolbox.register("mate", tools.cxUniform, indpb=self.conf["mate_indpb"])
-        else:
-            raise RuntimeError("unknown mate function")
+        mate_list = [
+            tools.cxOnePoint,
+            tools.cxTwoPoint,
+            partial(tools.cxUniform, indpb=self.conf["mate_indpb_1"]),
+            partial(tools.cxUniform, indpb=self.conf["mate_indpb_2"])
+        ]
 
-        toolbox.register("mutate", tools.mutGaussian,
+        mut_list = [
+            partial(tools.mutGaussian,
                          mu=0.0,
-                         sigma=self.conf["mutation_Gaussian_sigma"],
-                         indpb=self.conf["mutation_Gaussian_indpb"])
+                         sigma=self.conf["mutation_Gaussian_sigma_1"],
+                         indpb=self.conf["mutation_Gaussian_indpb_1"]),
+            partial(tools.mutGaussian,
+                         mu=0.0,
+                         sigma=self.conf["mutation_Gaussian_sigma_2"],
+                         indpb=self.conf["mutation_Gaussian_indpb_2"]),
+            partial(tools.mutGaussian,
+                         mu=0.0,
+                         sigma=self.conf["mutation_Gaussian_sigma_3"],
+                         indpb=self.conf["mutation_Gaussian_indpb_3"]),
+        ]
+
+        def mate(ind1, ind2):
+            return random.choice(mate_list)(ind1, ind2)
+
+        def mutate(ind1):
+            return random.choice(mut_list)(ind1)
+
+        toolbox.register("mate", mate)
+
+        toolbox.register("mutate", mutate)
 
         toolbox.register("select",
                          sel_elitist_tournament,
