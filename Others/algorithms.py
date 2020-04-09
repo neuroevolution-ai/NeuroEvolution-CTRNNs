@@ -63,7 +63,7 @@ def varOr(population, toolbox, lambda_, cxpb, mutpb):
 
 
 def eaMuPlusLambda(population, toolbox, mu, lambda_, cxpb, mutpb, ngen, checkpoint=None, FREQ=10,
-                   stats=None, halloffame=None, verbose=__debug__):
+                   stats=None, halloffame=None, verbose=__debug__, reeval_old=True):
     """This is the :math:`(\mu + \lambda)` evolutionary algorithm.
 
     :param population: A list of individuals.
@@ -121,7 +121,10 @@ def eaMuPlusLambda(population, toolbox, mu, lambda_, cxpb, mutpb, ngen, checkpoi
         logbook = tools.Logbook()
         logbook.header = ['gen', 'nevals'] + (stats.fields if stats else [])
 
-        # Evaluate the individuals with an invalid fitness
+        if reeval_old:
+            for ind in population:
+                del ind.fitness.values
+
         invalid_ind = [ind for ind in population if not ind.fitness.valid]
         fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
         for ind, fit in zip(invalid_ind, fitnesses):
@@ -138,9 +141,8 @@ def eaMuPlusLambda(population, toolbox, mu, lambda_, cxpb, mutpb, ngen, checkpoi
     for gen in range(start_gen, ngen + 1):
         offspring = varOr(population, toolbox, lambda_, cxpb, mutpb)
 
-        invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
-        fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
-        for ind, fit in zip(invalid_ind, fitnesses):
+        fitnesses = toolbox.map(toolbox.evaluate, population + offspring)
+        for ind, fit in zip(population + offspring, fitnesses):
             ind.fitness.values = fit
 
         if halloffame is not None:
@@ -149,7 +151,7 @@ def eaMuPlusLambda(population, toolbox, mu, lambda_, cxpb, mutpb, ngen, checkpoi
         population[:] = toolbox.select(population + offspring, mu)
 
         record = stats.compile(population) if stats is not None else {}
-        logbook.record(gen=gen, nevals=len(invalid_ind), **record)
+        logbook.record(gen=gen, nevals=len(population + offspring), **record)
         if verbose:
             print(logbook.stream)
 
