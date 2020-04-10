@@ -63,7 +63,7 @@ def varOr(population, toolbox, lambda_, cxpb, mutpb):
 
 
 def eaMuPlusLambda(population, toolbox, mu, lambda_, cxpb, mutpb, ngen, checkpoint=None, FREQ=10,
-                   stats=None, halloffame=None, verbose=__debug__, reeval_old=True):
+                   stats=None, halloffame=None, verbose=__debug__, reeval_old=True, cb_before_each_generation=None):
     """This is the :math:`(\mu + \lambda)` evolutionary algorithm.
 
     :param population: A list of individuals.
@@ -139,6 +139,8 @@ def eaMuPlusLambda(population, toolbox, mu, lambda_, cxpb, mutpb, ngen, checkpoi
             print(logbook.stream)
 
     for gen in range(start_gen, ngen + 1):
+        if cb_before_each_generation:
+            cb_before_each_generation()
         offspring = varOr(population, toolbox, lambda_, cxpb, mutpb)
 
         fitnesses = toolbox.map(toolbox.evaluate, population + offspring)

@@ -74,7 +74,7 @@ class TrainerMuPlusLambda(object):
                              self.conf["elitist_ratio"]),
                          tournsize=self.conf["tournsize"])
 
-    def train(self, stats, number_generations, checkpoint=None):
+    def train(self, stats, number_generations, checkpoint=None, cb_before_each_generation=None):
         pop = self.toolbox.population(n=int(self.population_size))
         return algorithms.eaMuPlusLambda(pop,
                                          toolbox=self.toolbox,
@@ -84,5 +84,6 @@ class TrainerMuPlusLambda(object):
                                          lambda_=int(self.population_size * self.conf["lambda"]),
                                          cxpb=1.0-self.conf["mutpb"], mutpb=self.conf["mutpb"],
                                          halloffame=self.hof,
-                                         checkpoint=checkpoint
+                                         checkpoint=checkpoint,
+                                         cb_before_each_generation=cb_before_each_generation,
                                          )
