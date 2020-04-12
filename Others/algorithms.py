@@ -63,7 +63,8 @@ def varOr(population, toolbox, lambda_, cxpb, mutpb):
 
 
 def eaMuPlusLambda(population, toolbox, mu, lambda_, cxpb, mutpb, ngen, checkpoint=None, FREQ=10,
-                   stats=None, halloffame=None, verbose=__debug__, reeval_old=True, cb_before_each_generation=None):
+                   stats=None, halloffame=None, verbose=__debug__, reeval_old=True,
+                   cb_before_each_generation=None, include_parents_in_next_generation=True):
     """This is the :math:`(\mu + \lambda)` evolutionary algorithm.
 
     :param population: A list of individuals.
@@ -143,17 +144,22 @@ def eaMuPlusLambda(population, toolbox, mu, lambda_, cxpb, mutpb, ngen, checkpoi
             cb_before_each_generation()
         offspring = varOr(population, toolbox, lambda_, cxpb, mutpb)
 
-        fitnesses = toolbox.map(toolbox.evaluate, population + offspring)
-        for ind, fit in zip(population + offspring, fitnesses):
+        if include_parents_in_next_generation:
+            candidates = population + offspring
+        else:
+            candidates = offspring
+
+        fitnesses = toolbox.map(toolbox.evaluate, candidates)
+        for ind, fit in zip(candidates, fitnesses):
             ind.fitness.values = fit
 
         if halloffame is not None:
             halloffame.update(offspring)
 
-        population[:] = toolbox.select(population + offspring, mu)
+        population[:] = toolbox.select(candidates, mu)
 
         record = stats.compile(population) if stats is not None else {}
-        logbook.record(gen=gen, nevals=len(population + offspring), **record)
+        logbook.record(gen=gen, nevals=len(candidates), **record)
         if verbose:
             print(logbook.stream)
 
@@ -165,7 +171,7 @@ def eaMuPlusLambda(population, toolbox, mu, lambda_, cxpb, mutpb, ngen, checkpoi
 
 
 def eaGenerateUpdate(toolbox, ngen, halloffame=None, stats=None,
-                     verbose=__debug__, checkpoint=None, FREQ=10):
+                     verbose=__debug__, checkpoint=None, FREQ=10, cb_before_each_generation=None):
     """This is algorithm implements the ask-tell model proposed in
     [Colette2010]_, where ask is called `generate` and tell is called `update`.
 
@@ -215,6 +221,8 @@ def eaGenerateUpdate(toolbox, ngen, halloffame=None, stats=None,
         logbook.header = ['gen', 'nevals'] + (stats.fields if stats else [])
 
     for gen in range(start_gen, ngen + 1):
+        if cb_before_each_generation:
+            cb_before_each_generation()
         population = toolbox.generate()
         fitnesses = toolbox.map(toolbox.evaluate, population)
         for ind, fit in zip(population, fitnesses):

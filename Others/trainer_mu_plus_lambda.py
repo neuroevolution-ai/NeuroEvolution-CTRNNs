@@ -9,7 +9,7 @@ from functools import partial
 
 
 def sel_elitist_tournament(individuals, mu, k_elitist, k_tournament, tournsize):
-    return tools.selBest(individuals, int(k_elitist*mu)) + \
+    return tools.selBest(individuals, int(k_elitist * mu)) + \
            tools.selTournament(individuals, int(k_tournament * mu), tournsize=tournsize)
 
 
@@ -42,20 +42,28 @@ class TrainerMuPlusLambda(object):
             partial(tools.cxUniform, indpb=self.conf["mate_indpb_2"])
         ]
 
-        mut_list = [
-            partial(tools.mutGaussian,
-                         mu=0.0,
-                         sigma=self.conf["mutation_Gaussian_sigma_1"],
-                         indpb=self.conf["mutation_Gaussian_indpb_1"]),
-            partial(tools.mutGaussian,
-                         mu=0.0,
-                         sigma=self.conf["mutation_Gaussian_sigma_2"],
-                         indpb=self.conf["mutation_Gaussian_indpb_2"]),
-            partial(tools.mutGaussian,
-                         mu=0.0,
-                         sigma=self.conf["mutation_Gaussian_sigma_3"],
-                         indpb=self.conf["mutation_Gaussian_indpb_3"]),
-        ]
+        if self.conf["mutation_Gaussian_dynamic_prob"]:
+            mut_list = [partial(tools.mutGaussian,
+                                mu=0.0,
+                                sigma=self.conf["mutation_Gaussian_sigma_base"] ** (
+                                            -random.random() * self.conf["mutation_Gaussian_sigma_factor"]),
+                                indpb=self.conf["mutation_Gaussian_indpb_base"] ** (
+                                        -random.random() * self.conf["mutation_Gaussian_indpb_factor"]))]
+        else:
+            mut_list = [
+                partial(tools.mutGaussian,
+                        mu=0.0,
+                        sigma=self.conf["mutation_Gaussian_sigma_1"],
+                        indpb=self.conf["mutation_Gaussian_indpb_1"]),
+                partial(tools.mutGaussian,
+                        mu=0.0,
+                        sigma=self.conf["mutation_Gaussian_sigma_2"],
+                        indpb=self.conf["mutation_Gaussian_indpb_2"]),
+                partial(tools.mutGaussian,
+                        mu=0.0,
+                        sigma=self.conf["mutation_Gaussian_sigma_3"],
+                        indpb=self.conf["mutation_Gaussian_indpb_3"])
+            ]
 
         def mate(ind1, ind2):
             return random.choice(mate_list)(ind1, ind2)
@@ -82,8 +90,10 @@ class TrainerMuPlusLambda(object):
                                          stats=stats,
                                          mu=int(self.population_size * self.conf["mu"]),
                                          lambda_=int(self.population_size * self.conf["lambda"]),
-                                         cxpb=1.0-self.conf["mutpb"], mutpb=self.conf["mutpb"],
+                                         cxpb=1.0 - self.conf["mutpb"], mutpb=self.conf["mutpb"],
                                          halloffame=self.hof,
                                          checkpoint=checkpoint,
                                          cb_before_each_generation=cb_before_each_generation,
+                                         include_parents_in_next_generation=self.conf[
+                                             "include_parents_in_next_generation"]
                                          )
