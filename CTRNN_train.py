@@ -34,6 +34,8 @@ class EpisodeRunner(object):
         brain = self.brain_class(self.input_size, self.output_size, individual, self.conf)
         fitness_current = 0
         number_fitness_runs = self.conf["number_fitness_runs"]
+        if self.conf["keep_env_seed_fixed_during_generation"]:
+            env.seed(get_seed_for_generation())
 
         for i in range(number_fitness_runs):
             ob = self.env.reset()
@@ -46,7 +48,7 @@ class EpisodeRunner(object):
                     action = np.argmax(action)
                 # Perform step of the environment simulation
                 ob, rew, done, info = self.env.step(action)
-                if self.conf["environment"] == "BipedalWalker-v3":
+                if configuration_data["environment"].startswith("BipedalWalker"):
                     if ob[2] < 0.0001:
                         consecutive_non_movement = consecutive_non_movement + 1
                         if consecutive_non_movement > 50:
@@ -70,6 +72,7 @@ args = parser.parse_args()
 with open("Configuration.json", "r") as read_file:
     configuration_data = json.load(read_file)
 
+
 # Get brain class
 if configuration_data["neural_network_type"] == 'LNN':
     brain_class = lnn.LayeredNN
@@ -83,6 +86,17 @@ env = gym.make(configuration_data["environment"])
 # Set random seed for gym environment
 if configuration_data["random_seed_for_environment"] is not -1:
     env.seed(configuration_data["random_seed_for_environment"])
+
+seed = None
+
+
+def reset_seed_for_generation():
+    global seed
+    seed = int(time.time())
+
+
+def get_seed_for_generation():
+    return seed
 
 # Get individual size
 input_size = env.observation_space.shape[0]
@@ -125,7 +139,8 @@ if __name__ == "__main__":
                                    nn_type=configuration_data["neural_network_type"],
                                    configuration_data=configuration_data)
     pop, log = trainer.train(stats, number_generations=configuration_data["number_generations"],
-                             checkpoint=args.from_checkpoint)
+                             checkpoint=args.from_checkpoint,
+                             cb_before_each_generation=reset_seed_for_generation)
 
     # print elapsed time
     print("Time elapsed: %s" % (time.time() - startTime))

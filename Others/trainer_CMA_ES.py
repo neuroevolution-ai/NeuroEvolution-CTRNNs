@@ -27,6 +27,7 @@ class TrainerCmaEs(object):
         toolbox.register("generate", strategy.generate, creator.Individual)
         toolbox.register("update", strategy.update)
 
-    def train(self, stats, number_generations, checkpoint):
+    def train(self, stats, number_generations, checkpoint, cb_before_each_generation=None):
         return algorithms.eaGenerateUpdate(self.toolbox, ngen=number_generations,
-                                           stats=stats, halloffame=self.hof, checkpoint=checkpoint)
+                                           stats=stats, halloffame=self.hof, checkpoint=checkpoint,
+                                           cb_before_each_generation=cb_before_each_generation)

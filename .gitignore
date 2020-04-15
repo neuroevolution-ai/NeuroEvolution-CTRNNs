@@ -4,3 +4,4 @@ __pycache__/
 .idea/
 checkpoints/
 mujoco-py/
+output.csv

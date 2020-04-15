@@ -86,7 +86,7 @@ for individual in hall_of_fame[:args.hof]:
 
         fitness_current += rew
 
-        if configuration_data["environment"] == "BipedalWalker-v3":
+        if configuration_data["environment"].startswith("BipedalWalker"):
             if ob[2] < 0.0001:
                 consecutive_non_movement = consecutive_non_movement + 1
                 if consecutive_non_movement > 50:
