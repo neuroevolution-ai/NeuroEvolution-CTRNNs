@@ -103,8 +103,7 @@ if __name__ == "__main__":
     print("Time elapsed: %s" % (time.time() - startTime))
 
     # Create new directory to store data of current simulation run
-    subdirectory_name = configuration_data["neural_network_type"]
-    directory = os.path.join('Simulation_Results', subdirectory_name, startDate)
+    directory = os.path.join('Simulation_Results', startDate)
     os.makedirs(directory)
 
     # Save Configuration file as json
