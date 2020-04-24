@@ -8,6 +8,9 @@ __pycache__/
 # Mujoco directory
 mujoco-py/
 
+# Ignore Configuration.json
+Configuration.json
+
 # User-specific stuff
 .idea/**/workspace.xml
 .idea/**/tasks.xml
