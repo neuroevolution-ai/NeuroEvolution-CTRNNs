@@ -26,6 +26,9 @@ class LayeredNN(nn.Module):
         W2_size = self.hidden_size1*self.hidden_size2
         W3_size = self.hidden_size2*self.output_size
 
+        # Set indirect encoding to false (remove this later later when using indirect encoding)
+        config["indirect_encoding"] = False
+
         # Indirect encoding
         if config["indirect_encoding"]:
 
@@ -107,10 +110,14 @@ class LayeredNN(nn.Module):
 
         hidden_size1 = config["number_neurons_layer1"]
         hidden_size2 = config["number_neurons_layer2"]
-        cppn_hidden_size1 = config["cppn_hidden_size1"]
-        cppn_hidden_size2 = config["cppn_hidden_size2"]
+
+        # Set indirect encoding to false (remove this later later when using indirect encoding)
+        config["indirect_encoding"] = False
 
         if config["indirect_encoding"]:
+            cppn_hidden_size1 = config["cppn_hidden_size1"]
+            cppn_hidden_size2 = config["cppn_hidden_size2"]
+
             individual_size = 4 * cppn_hidden_size1 + cppn_hidden_size1 * cppn_hidden_size2 + cppn_hidden_size2 * 1
 
             # CPPN always uses biases
