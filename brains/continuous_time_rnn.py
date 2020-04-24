@@ -8,8 +8,6 @@ class ContinuousTimeRNN:
         optimize_y0 = config["optimize_y0"]
         delta_t = config["delta_t"]
         optimize_state_boundaries =  config["optimize_state_boundaries"]
-        clipping_range_min = config["clipping_range_min"]
-        clipping_range_max =  config["clipping_range_max"]
         set_principle_diagonal_elements_of_W_negative = config["set_principle_diagonal_elements_of_W_negative"]
         number_neurons = config["number_neurons"]
 
@@ -17,8 +15,6 @@ class ContinuousTimeRNN:
         W_size = number_neurons * number_neurons
         T_size = number_neurons * output_size
 
-        self.clipping_range_min = clipping_range_min
-        self.clipping_range_max = clipping_range_max
         self.delta_t = delta_t
         self.set_principle_diagonal_elements_of_W_negative = set_principle_diagonal_elements_of_W_negative
 
@@ -47,8 +43,8 @@ class ContinuousTimeRNN:
             self.clipping_range_min = [-abs(element) for element in individual[index:index+number_neurons]]
             self.clipping_range_max = [abs(element) for element in individual[index+number_neurons:]]
         else:
-            self.clipping_range_min = [clipping_range_min] * number_neurons
-            self.clipping_range_max = [clipping_range_max] * number_neurons
+            self.clipping_range_min = [config["clipping_range_min"]] * number_neurons
+            self.clipping_range_max = [config["clipping_range_max"]] * number_neurons
 
         # Set elements of main diagonal to less than 0
         if set_principle_diagonal_elements_of_W_negative:
@@ -66,8 +62,7 @@ class ContinuousTimeRNN:
         self.y = self.y + self.delta_t * dydt
 
         # Clip y to state boundaries
-        for y_min, y_max in zip(self.clipping_range_min, self.clipping_range_max):
-            self.y = np.clip(self.y, y_min, y_max)
+        self.y = np.clip(self.y, self.clipping_range_min, self.clipping_range_max)
 
         self.y = np.clip(self.y, self.clipping_range_min, self.clipping_range_max)
 
