@@ -126,6 +126,10 @@ if __name__ == "__main__":
             write_file.write('\n')
 
         write_file.write('\n')
+        write_file.write('Genome Size: {:d}\n'.format(individual_size))
+        write_file.write('Inputs: {:d}\n'.format(input_size))
+        write_file.write('Outputs: {:d}\n'.format(output_size))
+        write_file.write('\n')
         dash = '-' * 80
         write_file.write(dash + '\n')
         write_file.write(
