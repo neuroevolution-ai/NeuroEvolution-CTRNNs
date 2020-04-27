@@ -40,11 +40,14 @@ class ContinuousTimeRNN:
 
         # Clipping ranges for state boundaries
         if optimize_state_boundaries:
-            self.clipping_range_min = [-abs(element) for element in individual[index:index+number_neurons]]
-            self.clipping_range_max = [abs(element) for element in individual[index+number_neurons:]]
+            self.clipping_range_min = np.asarray([-abs(element) for element in individual[index:index+number_neurons]])
+            self.clipping_range_max = np.asarray([abs(element) for element in individual[index+number_neurons:]])
         else:
-            self.clipping_range_min = [config["clipping_range_min"]] * number_neurons
-            self.clipping_range_max = [config["clipping_range_max"]] * number_neurons
+            self.clipping_range_min = np.asarray([-config["clipping_range"]] * number_neurons)
+            self.clipping_range_max = np.asarray([config["clipping_range"]] * number_neurons)
+
+        self.clipping_range_min = self.clipping_range_min[:, np.newaxis]
+        self.clipping_range_max = self.clipping_range_max[:, np.newaxis]
 
         # Set elements of main diagonal to less than 0
         if set_principle_diagonal_elements_of_W_negative:
@@ -62,8 +65,6 @@ class ContinuousTimeRNN:
         self.y = self.y + self.delta_t * dydt
 
         # Clip y to state boundaries
-        self.y = np.clip(self.y, self.clipping_range_min, self.clipping_range_max)
-
         self.y = np.clip(self.y, self.clipping_range_min, self.clipping_range_max)
 
         # Calculate outputs
