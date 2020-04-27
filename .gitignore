@@ -9,7 +9,7 @@ __pycache__/
 mujoco-py/
 
 # Ignore Configuration.json
-Configuration.json
+/Configuration.json
 
 # User-specific stuff
 .idea/**/workspace.xml
