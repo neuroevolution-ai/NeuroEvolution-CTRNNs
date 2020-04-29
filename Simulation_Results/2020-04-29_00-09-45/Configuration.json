@@ -1,0 +1,1 @@
+{"environment": "Walker2d-v2", "neural_network_type": "CTRNN", "random_seed_for_environment": 0, "number_neurons": 20, "delta_t": 0.05, "optimize_state_boundaries": false, "clipping_range": 5.0, "optimize_y0": false, "set_principle_diagonal_elements_of_W_negative": true, "population_size": 50, "number_generations": 1500, "sigma": 0.2, "number_fitness_runs": 1}
