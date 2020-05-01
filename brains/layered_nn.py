@@ -13,10 +13,11 @@ class LayeredNN(nn.Module):
         self.hidden_size2 = config["number_neurons_layer2"]
 
         self.fc1 = nn.Linear(input_size, self.hidden_size1, bias=config["use_biases"])
-        self.relu1 = nn.ReLU()
+        self.tanh1 = nn.Tanh()
         self.fc2 = nn.Linear(self.hidden_size1, self.hidden_size2, bias=config["use_biases"])
-        self.relu2 = nn.ReLU()
+        self.tanh2 = nn.Tanh()
         self.fc3 = nn.Linear(self.hidden_size2, output_size, bias=config["use_biases"])
+        self.tanh3 = nn.Tanh()
 
         self.input_size = input_size
         self.output_size = output_size
@@ -61,9 +62,13 @@ class LayeredNN(nn.Module):
             self.W3 = np.array([[float(element)] for element in individual[W1_size+W2_size:W1_size + W2_size + W3_size]],
                                dtype=np.single)
 
-            self.W1 = self.W1.reshape([self.hidden_size1, input_size])
-            self.W2 = self.W2.reshape([self.hidden_size2, self.hidden_size1])
-            self.W3 = self.W3.reshape([output_size, self.hidden_size2])
+            self.W1 = self.W1.reshape([input_size, self.hidden_size1])
+            self.W2 = self.W2.reshape([self.hidden_size1, self.hidden_size2])
+            self.W3 = self.W3.reshape([self.hidden_size2, output_size])
+
+            self.W1 = self.W1.transpose()
+            self.W2 = self.W2.transpose()
+            self.W3 = self.W3.transpose()
 
             # Normalize
             # W1 = (W1 - W1.mean()) / W1.std()
@@ -91,10 +96,11 @@ class LayeredNN(nn.Module):
 
     def forward(self, x):
         out = self.fc1(x)
-        out = self.relu1(out)
+        out = self.tanh1(out)
         out = self.fc2(out)
-        out = self.relu2(out)
+        out = self.tanh2(out)
         out = self.fc3(out)
+        out = self.tanh3(out)
         return out
 
     def step(self, ob):

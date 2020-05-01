@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class FeedForwardNN:
 
     def __init__(self, input_size, output_size, individual, config):
@@ -20,18 +21,9 @@ class FeedForwardNN:
         self.W3 = np.array([[float(element)] for element in individual[W1_size + W2_size:W1_size + W2_size + W3_size]],
                            dtype=np.single)
 
-        # self.W1 = np.array([element for element in individual[0:W1_size]], dtype=np.float32)
-        # self.W2 = np.array([element for element in individual[W1_size:W1_size + W2_size]], dtype=np.float32)
-        # self.W3 = np.array([element for element in individual[W1_size + W2_size:W1_size + W2_size + W3_size]],
-        #                    dtype=np.float32)
-
-        self.W1 = self.W1.reshape([self.hidden_size1, input_size])
-        self.W2 = self.W2.reshape([self.hidden_size2, self.hidden_size1])
-        self.W3 = self.W3.reshape([output_size, self.hidden_size2])
-
-        # self.W1 = self.W1.reshape([input_size, self.hidden_size1])
-        # self.W2 = self.W2.reshape([self.hidden_size1, self.hidden_size2])
-        # self.W3 = self.W3.reshape([self.hidden_size2, output_size])
+        self.W1 = self.W1.reshape([input_size, self.hidden_size1])
+        self.W2 = self.W2.reshape([self.hidden_size1, self.hidden_size2])
+        self.W3 = self.W3.reshape([self.hidden_size2, output_size])
 
         # Biases
         if self.use_biases:
@@ -45,9 +37,13 @@ class FeedForwardNN:
             self.B3 = np.array(
                 [float(element) for element in individual[index_b + self.hidden_size1 + self.hidden_size2:]],
                 dtype=np.single)
+        else:
+            self.B1 = None
+            self.B2 = None
+            self.B3 = None
 
-    def layer_step(self, layer_weights, a, bias=None):
-        x = np.dot(layer_weights, a)
+    def layer_step(self, a, layer_weights, bias):
+        x = np.dot(a, layer_weights)
 
         if bias is not None:
             x += bias
@@ -57,24 +53,17 @@ class FeedForwardNN:
     def relu(self, x):
         return np.maximum(0, x)
 
+    def tanh(self, x):
+        return np.tanh(x)
+
     def step(self, ob):
 
-        bias = None
-
-        if bias:
-            bias = self.B1
-        x = self.layer_step(self.W1, ob, bias)
-        x = self.relu(x)
-
-        if bias:
-            bias = self.B2
-        x = self.layer_step(self.W2, x, bias)
-        x = self.relu(x)
-
-        if bias:
-            bias = self.B3
-        x = self.layer_step(self.W3, x, bias)
-        x = self.relu(x)
+        x = self.layer_step(ob, self.W1, self.B1)
+        x = self.tanh(x)
+        x = self.layer_step(x, self.W2, self.B2)
+        x = self.tanh(x)
+        x = self.layer_step(x, self.W3, self.B3)
+        x = self.tanh(x)
 
         return x
 

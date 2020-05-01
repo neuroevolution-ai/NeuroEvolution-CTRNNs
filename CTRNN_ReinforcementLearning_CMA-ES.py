@@ -9,6 +9,7 @@ from datetime import datetime
 import os
 import brains.continuous_time_rnn as ctrnn
 import brains.layered_nn as lnn
+import brains.feed_forward as ff
 
 from deap import algorithms
 from deap import base
