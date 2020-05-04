@@ -6,8 +6,9 @@ import json
 import time
 import matplotlib.pyplot as plt
 import brains.continuous_time_rnn as ctrnn
-import brains.layered_nn as lnn
+import brains.feed_forward as ff
 import sys
+import numpy as np
 
 from deap import base
 from deap import creator
@@ -15,18 +16,18 @@ from deap import creator
 creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 creator.create("Individual", list, typecode='b', fitness=creator.FitnessMax)
 
-directory = '2020-03-05_07-51-21'
+directory = '2020-05-02_23-07-13'
 
 # Load configuration file
-with open(os.path.join('Simulation_Results', 'LNN', directory, 'Configuration.json'), "r") as read_file:
+with open(os.path.join('Simulation_Results', directory, 'Configuration.json'), "r") as read_file:
     configuration_data = json.load(read_file)
 
 # Load hall of fame candidates
-with open(os.path.join('Simulation_Results', 'LNN', directory, 'HallOfFame.pickle'), "rb") as read_file:
+with open(os.path.join('Simulation_Results', directory, 'HallOfFame.pickle'), "rb") as read_file:
     hall_of_fame = pickle.load(read_file)
 
 # Load Log
-with open(os.path.join('Simulation_Results', 'LNN', directory, 'Log.json'), 'r') as read_file:
+with open(os.path.join('Simulation_Results', directory, 'Log.json'), 'r') as read_file:
     log = json.load(read_file)
 
 # Get individual from hall of fame
@@ -44,7 +45,7 @@ output_size = env.action_space.shape[0]
 
 # Get brain class
 if configuration_data["neural_network_type"] == 'LNN':
-    brain_class = lnn.LayeredNN
+    brain_class = ff.FeedForwardNN
 elif configuration_data["neural_network_type"] == 'CTRNN':
     brain_class = ctrnn.ContinuousTimeRNN
 else:
@@ -74,7 +75,6 @@ for i in range(1):
         fitness_current += rew
 
         env.render()
-        time.sleep(0.01)
 
     print(fitness_current)
 
