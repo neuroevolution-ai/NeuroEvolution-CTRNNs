@@ -51,7 +51,7 @@ with open("Configuration.json", "r") as read_file:
 
 # Get brain class
 if configuration_data["neural_network_type"] == 'LNN':
-    brain_class = lnn.LayeredNN
+    brain_class = ff.FeedForwardNN
 elif configuration_data["neural_network_type"] == 'CTRNN':
     brain_class = ctrnn.ContinuousTimeRNN
 else:
