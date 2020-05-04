@@ -1,0 +1,1 @@
+{"environment": "Hopper-v2", "neural_network_type": "LNN", "random_seed_for_environment": 0, "population_size": 200, "number_generations": 2500, "sigma": 1.0, "number_fitness_runs": 1, "use_biases": false, "number_neurons_layer1": 64, "number_neurons_layer2": 32, "indirect_encoding": false}
