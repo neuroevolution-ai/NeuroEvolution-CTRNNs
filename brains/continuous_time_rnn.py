@@ -31,12 +31,12 @@ class ContinuousTimeRNN:
 
         # Initial state values y0
         if optimize_y0:
-            y0 = np.array([element for element in individual[index:index+number_neurons]])
+            self.y0 = np.array([element for element in individual[index:index+number_neurons]])
             index += number_neurons
         else:
-            y0 = np.zeros(number_neurons)
+            self.y0 = np.zeros(number_neurons)
 
-        self.y = y0[:, np.newaxis]
+        self.y = self.y0[:, np.newaxis]
 
         # Clipping ranges for state boundaries
         if optimize_state_boundaries:
