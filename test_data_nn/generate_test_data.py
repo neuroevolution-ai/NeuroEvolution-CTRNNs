@@ -11,10 +11,10 @@ output_size = 8
 
 individual_size = ff.FeedForwardNN.get_individual_size(input_size, output_size, config)
 
-weights = np.random.rand(individual_size)
+weights = np.random.rand(individual_size).astype(np.single)
 
 np.save("weight_data", weights)
 
-input_data = np.random.rand(input_size)
+input_data = np.random.rand(input_size).astype(np.single)
 
 np.save("input_data", input_data)
