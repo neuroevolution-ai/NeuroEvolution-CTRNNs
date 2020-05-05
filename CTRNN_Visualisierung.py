@@ -52,11 +52,13 @@ else:
     sys.exit()
 
 env.render()
-env.reset()
 
 for i in range(1):
 
     fitness_current = 0
+
+    if configuration_data["random_seed_for_environment"] is not -1:
+        env.seed(configuration_data["random_seed_for_environment"])
     ob = env.reset()
     done = False
 
