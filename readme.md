@@ -8,12 +8,15 @@
 ```bash
 git clone git@github.com:neuroevolution-ai/NeuroEvolution.git
 cd NeuroEvolution
+sudo apt install cmake python3 python3-dev python3-pip swig python3-tk
+sudo pip3 install virtualenv --system
 virtualenv ~/.venv/neuro --python=python3
 . ~/.venv/neuro/bin/activate
-pip install python3-tk scoop pybullet 'gym[all]' torch deap matplotlib
+pip install scoop pybullet 'gym[atair]' 'gym[box2d]' torch deap matplotlib
 
 # if mujoco is needed, also run
-LD_LIBRARY_PATH=$HOME/.mujoco/mujoco200/bin pip install mujoco-py 
+LD_LIBRARY_PATH=$HOME/.mujoco/mujoco200/bin pip install mujoco-py
+pip install 'gym[mujoco]'
 ```
 
 3. (optional) change configuration `nano Configuration.json`
@@ -22,3 +25,5 @@ LD_LIBRARY_PATH=$HOME/.mujoco/mujoco200/bin pip install mujoco-py
 	- `LD_LIBRARY_PATH=$HOME/.mujoco/mujoco200/bin python -m scoop CTRNN_ReinforcementLearning_CMA-ES.py`
 4. show results:
 	- `LD_LIBRARY_PATH=$HOME/.mujoco/mujoco200/bin python CTRNN_Visualisierung.py`
+
+
