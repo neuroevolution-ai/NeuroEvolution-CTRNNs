@@ -3,7 +3,7 @@ from deap import creator
 from deap import tools
 from deap import cma
 from Others import algorithms
-
+from deap import algorithms as orig_algorithms
 
 class TrainerCmaEs(object):
 
@@ -28,6 +28,10 @@ class TrainerCmaEs(object):
         toolbox.register("update", strategy.update)
 
     def train(self, stats, number_generations, checkpoint, cb_before_each_generation=None):
-        return algorithms.eaGenerateUpdate(self.toolbox, ngen=number_generations,
+        if self.conf["use_original_cma_trainer"]:
+            return orig_algorithms.eaGenerateUpdate(self.toolbox, ngen=number_generations,
+                                             halloffame=self.hof, stats=stats)
+        else:
+            return algorithms.eaGenerateUpdate(self.toolbox, ngen=number_generations,
                                            stats=stats, halloffame=self.hof, checkpoint=checkpoint,
                                            cb_before_each_generation=cb_before_each_generation)

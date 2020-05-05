@@ -84,7 +84,7 @@ else:
 env = gym.make(configuration_data["environment"])
 
 # Set random seed for gym environment
-if configuration_data["random_seed_for_environment"] is not -1:
+if configuration_data["random_seed_for_environment"] != -1:
     env.seed(configuration_data["random_seed_for_environment"])
 
 seed = None
@@ -115,7 +115,7 @@ ep_runner = EpisodeRunner(conf=configuration_data, discrete_actions=discrete_act
 if configuration_data["trainer_type"] == "CMA_ES":
     trainer = TrainerCmaEs(map_func=futures.map, individual_size=individual_size,
                            evalFitness=ep_runner.evalFitness, conf=configuration_data,
-                           checkpoint=args.from_checkpoint
+                           checkpoint=args.from_checkpoint,
                            )
 elif configuration_data["trainer_type"] == "MU_LAMBDA":
     trainer = TrainerMuPlusLambda(map_func=futures.map, individual_size=individual_size,
@@ -140,7 +140,7 @@ if __name__ == "__main__":
                                    configuration_data=configuration_data)
     pop, log = trainer.train(stats, number_generations=configuration_data["number_generations"],
                              checkpoint=args.from_checkpoint,
-                             cb_before_each_generation=reset_seed_for_generation)
+                             cb_before_each_generation=reset_seed_for_generation,)
 
     # print elapsed time
     print("Time elapsed: %s" % (time.time() - startTime))
