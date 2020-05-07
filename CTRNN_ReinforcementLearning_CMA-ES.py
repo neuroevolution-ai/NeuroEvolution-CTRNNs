@@ -21,9 +21,6 @@ from scoop import futures
 
 def evalFitness(individual):
 
-    # Create brain
-    brain = brain_class(input_size, output_size, individual, configuration_data)
-
     fitness_current = 0
     number_fitness_runs = configuration_data["number_fitness_runs"]
 
@@ -33,6 +30,9 @@ def evalFitness(individual):
             env.seed(configuration_data["random_seed_for_environment"])
         ob = env.reset()
         done = False
+
+        # Create brain
+        brain = brain_class(input_size, output_size, individual, configuration_data)
 
         while not done:
 
