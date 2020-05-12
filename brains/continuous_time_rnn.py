@@ -73,7 +73,8 @@ class ContinuousTimeRNN:
             self.y = np.random.normal(self.y, self.parameter_perturbations)
 
         # Clip y to state boundaries
-        self.y = np.clip(self.y, self.clipping_range_min, self.clipping_range_max)
+        for y_min, y_max in zip(self.clipping_range_min, self.clipping_range_max):
+            self.y = np.clip(self.y, y_min, y_max)
 
         # Calculate outputs
         o = np.tanh(np.dot(self.y.T, self.T))
