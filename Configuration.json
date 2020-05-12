@@ -31,6 +31,7 @@
   "number_neurons": 20,
   "parameter_perturbations": 0.001,
   "delta_t": 0.05,
+  "use_old_clipping": false,
   "optimize_state_boundaries": true,
   "clipping_range_max": 1.0,
   "clipping_range_min": -1.0,

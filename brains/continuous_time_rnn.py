@@ -8,11 +8,13 @@ class ContinuousTimeRNN:
         optimize_y0 = config["optimize_y0"]
         delta_t = config["delta_t"]
         optimize_state_boundaries =  config["optimize_state_boundaries"]
-        self.parameter_perturbations = None
         if 'parameter_perturbations' in config:
             self.parameter_perturbations = config["parameter_perturbations"]
+
+        if "use_old_clipping" in config:
+            self.use_old_clipping = config["use_old_clipping"]
         clipping_range_min = config["clipping_range_min"]
-        clipping_range_max =  config["clipping_range_max"]
+        clipping_range_max = config["clipping_range_max"]
         set_principle_diagonal_elements_of_W_negative = config["set_principle_diagonal_elements_of_W_negative"]
         number_neurons = config["number_neurons"]
         np.random.seed(config['random_seed_for_environment'])
@@ -73,8 +75,12 @@ class ContinuousTimeRNN:
             self.y = np.random.normal(self.y, self.parameter_perturbations)
 
         # Clip y to state boundaries
-        for y_min, y_max in zip(self.clipping_range_min, self.clipping_range_max):
-            self.y = np.clip(self.y, y_min, y_max)
+        if self.use_old_clipping:
+            for y_min, y_max in zip(self.clipping_range_min, self.clipping_range_max):
+                self.y = np.clip(self.y, y_min, y_max)
+        else:
+            self.y = np.clip(self.y, self.clipping_range_min, self.clipping_range_max)
+
 
         # Calculate outputs
         o = np.tanh(np.dot(self.y.T, self.T))
