@@ -1,7 +1,7 @@
 {
   "environment": "BipedalWalker-v3",
   "neural_network_type": "CTRNN",
-  "trainer_type": "CMA_ES",
+  "trainer_type": "MU_LAMBDA",
   "use_original_cma_trainer":  true,
   "MU_LAMBDA_parameters": {
     "mu": 0.5,

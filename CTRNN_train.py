@@ -6,6 +6,7 @@ import gym
 import json
 from datetime import datetime
 import os
+import random
 import brains.continuous_time_rnn as ctrnn
 import brains.layered_nn as lnn
 
@@ -36,14 +37,21 @@ class EpisodeRunner(object):
         number_fitness_runs = self.conf["number_fitness_runs"]
         if self.conf["keep_env_seed_fixed_during_generation"]:
             env.seed(get_seed_for_generation())
+        env.seed(123)
+        env.action_space.seed(123)
+
+        if configuration_data["random_seed_for_python"]:
+            random.seed(configuration_data["random_seed_for_python"])
 
         for i in range(number_fitness_runs):
             ob = self.env.reset()
             done = False
             consecutive_non_movement = 0
+            it=0
             while not done:
                 # Perform step of the brain simulation
                 action = brain.step(ob)
+
                 if self.discrete_actions:
                     action = np.argmax(action)
                 # Perform step of the environment simulation
@@ -69,7 +77,7 @@ args = parser.parse_args()
 
 
 # Load configuration file
-with open("Configuration.json", "r") as read_file:
+with open(args.configuration, "r") as read_file:
     configuration_data = json.load(read_file)
 
 
@@ -83,16 +91,21 @@ else:
 
 env = gym.make(configuration_data["environment"])
 
-# Set random seed for gym environment
+# Set random seeds
+if configuration_data["random_seed_for_python"]:
+    random.seed(configuration_data["random_seed_for_python"])
+    np.random.seed(configuration_data["random_seed_for_python"])
+
 if configuration_data["random_seed_for_environment"] != -1:
     env.seed(configuration_data["random_seed_for_environment"])
 
-seed = None
+
+seed = configuration_data["random_seed_for_environment"]
 
 
 def reset_seed_for_generation():
     global seed
-    seed = int(time.time())
+    seed = int(random.randint(0,1000000))
 
 
 def get_seed_for_generation():

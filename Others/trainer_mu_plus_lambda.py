@@ -30,7 +30,6 @@ class TrainerMuPlusLambda(object):
                          -self.conf["initial_gene_range"],
                          self.conf["initial_gene_range"],
                          individual_size)
-
         toolbox.register("individual", tools.initIterate, creator.Individual, toolbox.indices)
 
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)
