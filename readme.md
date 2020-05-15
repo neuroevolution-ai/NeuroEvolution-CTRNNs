@@ -27,4 +27,12 @@ pip install 'gym[mujoco]'
 4. show results:
 	- `LD_LIBRARY_PATH=$HOME/.mujoco/mujoco200/bin python CTRNN_Visualisierung.py`
 
+## troubleshooting
+
+#### visualisierung fails with "ERROR: GLEW initalization error: Missing GL version"
+
+solution: `export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libGLEW.so)`
+
+https://github.com/openai/mujoco-py/issues/268#issuecomment-595177264
+
 
