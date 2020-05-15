@@ -4,6 +4,7 @@
 
 1. install mujoco: https://github.com/openai/mujoco-py/#install-mujoco
 	- on ubuntu you also need to install some requirements `sudo apt install libosmesa6-dev libgl1-mesa-glx libglfw3 patchelf`
+	- also the most recent version of mujoco is not compatbile with the most recent version of openaigym. So we use mjpro150 instead of mujoco200. [Download](https://www.roboti.us/download/mjpro150_linux.zip)
 2. setup virtual environment:
 ```bash
 git clone git@github.com:neuroevolution-ai/NeuroEvolution.git
