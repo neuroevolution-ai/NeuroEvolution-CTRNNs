@@ -1,7 +1,7 @@
 environment: Walker2d-v2
 neural_network_type: CTRNN
 random_seed_for_environment: 3
-population_size: 500
+population_size: 24
 number_generations: 2500
 sigma: 2.0
 number_fitness_runs: 1
