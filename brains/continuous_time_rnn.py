@@ -56,7 +56,9 @@ class ContinuousTimeRNN:
 
     def step(self, ob):
 
-        u = ob[:, np.newaxis]
+        ob2 = np.concatenate((ob['observation'], ob['achieved_goal'], ob['desired_goal']))
+
+        u = ob2[:, np.newaxis]
 
         # Differential equation
         dydt = np.dot(self.W, np.tanh(self.y)) + np.dot(self.V, u)

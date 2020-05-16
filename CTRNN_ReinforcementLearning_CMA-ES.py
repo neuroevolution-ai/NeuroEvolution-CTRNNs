@@ -21,20 +21,22 @@ from scoop import futures
 
 def evalFitness(individual):
 
-    fitness_current = 0
     number_fitness_runs = configuration_data["number_fitness_runs"]
+    fitness_complete = 0
 
     for i in range(number_fitness_runs):
 
-        if configuration_data["random_seed_for_environment"] is not -1:
-            env.seed(configuration_data["random_seed_for_environment"])
+        fitness_current = 0
+
+        env.seed(i)
         ob = env.reset()
         done = False
 
         # Create brain
         brain = brain_class(input_size, output_size, individual, configuration_data)
 
-        while not done:
+        rew = -1.0
+        while rew < 0.0 and fitness_current > -300.0:
 
             # Perform step of the brain simulation
             action = brain.step(ob)
@@ -44,7 +46,9 @@ def evalFitness(individual):
 
             fitness_current += rew
 
-    return fitness_current/number_fitness_runs,
+        fitness_complete += fitness_current
+
+    return fitness_complete/number_fitness_runs,
 
 
 # Load configuration file
@@ -66,7 +70,7 @@ if configuration_data["random_seed_for_environment"] is not -1:
     env.seed(configuration_data["random_seed_for_environment"])
 
 # Get individual size
-input_size = env.observation_space.shape[0]
+input_size = 16
 output_size = env.action_space.shape[0]
 
 individual_size = brain_class.get_individual_size(input_size, output_size, configuration_data)
