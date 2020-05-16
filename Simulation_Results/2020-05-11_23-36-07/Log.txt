@@ -1,7 +1,7 @@
 environment: HalfCheetah-v2
 neural_network_type: CTRNN
 random_seed_for_environment: 0
-population_size: 500
+population_size: 26
 number_generations: 2500
 sigma: 1.0
 number_fitness_runs: 1
