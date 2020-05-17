@@ -27,7 +27,8 @@ def evalFitness(individual):
     for i in range(number_fitness_runs):
 
         if configuration_data["random_seed_for_environment"] is not -1:
-            env.seed(configuration_data["random_seed_for_environment"])
+            env.seed(configuration_data["random_seed_for_environment"]+i)
+
         ob = env.reset()
         done = False
 
