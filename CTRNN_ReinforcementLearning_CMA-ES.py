@@ -51,11 +51,9 @@ def evalFitness(individual):
 
             if j >= frames_observation:
                 fitness_current += rew
-                ob[4] = 0.0
-                ob[5] = 0.0
-                ob[8] = 0.0
-                ob[9] = 0.0
-                ob[10] = 0.0
+                indices = [4, 5, 8, 9, 10]
+                for index in indices:
+                    ob[index] = 0.0
 
             j += 1
 
