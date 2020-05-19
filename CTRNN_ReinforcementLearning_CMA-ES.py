@@ -23,6 +23,7 @@ def evalFitness(individual):
 
     fitness_current = 0
     number_fitness_runs = configuration_data["number_fitness_runs"]
+    frames_observation = 20
 
     for i in range(number_fitness_runs):
 
@@ -31,19 +32,32 @@ def evalFitness(individual):
 
         ob = env.reset()
         done = False
+        env._max_episode_steps = 70
 
         # Create brain
         brain = brain_class(input_size, output_size, individual, configuration_data)
 
+        j = 0
         while not done:
 
             # Perform step of the brain simulation
             action = brain.step(ob)
 
+            if j <= frames_observation:
+                action = np.zeros(output_size)
+
             # Perform step of the environment simulation
             ob, rew, done, info = env.step(action)
 
-            fitness_current += rew
+            if j >= frames_observation:
+                fitness_current += rew
+                ob[4] = 0.0
+                ob[5] = 0.0
+                ob[8] = 0.0
+                ob[9] = 0.0
+                ob[10] = 0.0
+
+            j += 1
 
     return fitness_current/number_fitness_runs,
 
