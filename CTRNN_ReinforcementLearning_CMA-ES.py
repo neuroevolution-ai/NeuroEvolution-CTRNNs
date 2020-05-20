@@ -51,10 +51,12 @@ def evalFitness(individual):
             ob, rew, done, info = env.step(action)
 
             if j >= frames_observation:
-                fitness_current += rew
                 indices = [4, 5, 8, 9, 10]
                 for index in indices:
                     ob[index] = 0.0
+
+            if j >= frames_observation + frames_memory:
+                fitness_current += rew
 
             j += 1
 
