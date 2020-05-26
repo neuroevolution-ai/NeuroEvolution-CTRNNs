@@ -24,7 +24,7 @@ def evalFitness(individual):
     fitness_current = 0
     number_fitness_runs = configuration_data["number_fitness_runs"]
     frames_observation = 20
-    frames_memory = 50
+    frames_memory = 20
 
     for i in range(number_fitness_runs):
 
