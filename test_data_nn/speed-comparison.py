@@ -3,8 +3,9 @@ from brains import layered_nn as lnn
 import json
 import numpy as np
 import time
+import torch
 
-with open("../Configuration.json", "r") as read_file:
+with open("Configuration.json", "r") as read_file:
     config = json.load(read_file)
 
 input_size = 28
@@ -14,7 +15,7 @@ individual_size = ff.FeedForwardNN.get_individual_size(input_size, output_size, 
 individual = np.random.uniform(-1, 1, individual_size).astype(np.float64)
 
 inputs = []
-for i in range(1000):
+for i in range(10000):
     inputs.append(np.random.uniform(-1, 1, input_size).astype(np.float64))
 
 numpy_net = ff.FeedForwardNN(input_size, output_size, individual, config)
@@ -26,14 +27,22 @@ pytorch_outputs = []
 numpy_times = []
 pytorch_times = []
 
+no_grad = True
+
 for input in inputs:
     time_s_numpy = time.time()
     numpy_outputs.append(numpy_net.step(input))
     numpy_times.append(time.time() - time_s_numpy)
 
-    time_s_pytorch = time.time()
-    pytorch_outputs.append(pytorch_net.step(input))
-    pytorch_times.append(time.time() - time_s_pytorch)
+    if no_grad:
+        with torch.no_grad():
+            time_s_pytorch = time.time()
+            pytorch_outputs.append(pytorch_net.step(input))
+            pytorch_times.append(time.time() - time_s_pytorch)
+    else:
+        time_s_pytorch = time.time()
+        pytorch_outputs.append(pytorch_net.step(input))
+        pytorch_times.append(time.time() - time_s_pytorch)
 
 all_close_counter = 0
 for i in range(len(numpy_outputs)):
