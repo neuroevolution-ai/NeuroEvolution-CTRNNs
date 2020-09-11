@@ -16,7 +16,8 @@ from deap import creator
 creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 creator.create("Individual", list, typecode='b', fitness=creator.FitnessMax)
 
-directory = '2020-05-02_23-07-13'
+directory = '2020-05-25_10-32-23'
+#directory = '2020-05-31_03-14-08'
 
 # Load configuration file
 with open(os.path.join('Simulation_Results', directory, 'Configuration.json'), "r") as read_file:
@@ -35,10 +36,6 @@ individual = hall_of_fame[0]
 
 env = gym.make(configuration_data["environment"])
 
-# Set random seed for gym environment
-if configuration_data["random_seed_for_environment"] is not -1:
-    env.seed(configuration_data["random_seed_for_environment"])
-
 # Get individual size
 input_size = env.observation_space.shape[0]
 output_size = env.action_space.shape[0]
@@ -53,32 +50,65 @@ else:
 
 env.render()
 
-for i in range(1):
+fitness_complete = 0
+
+N = 500
+
+frames_observation = 20
+frames_memory = 20
+
+for i in range(N):
 
     fitness_current = 0
 
     if configuration_data["random_seed_for_environment"] is not -1:
-        env.seed(configuration_data["random_seed_for_environment"])
+        env.seed(configuration_data["random_seed_for_environment"] + i)
+
     ob = env.reset()
     done = False
+    env._max_episode_steps = frames_observation + frames_memory + 50
 
     # Create brain
     brain = brain_class(input_size, output_size, individual, configuration_data)
 
-    # Test fitness through simulation
+    j = 0
     while not done:
 
-        # Perform step of the brain simulation
-        action = brain.step(ob)
+        phase = "Observation phase (frames 0-19) - Brain gets input signals for the position of the red object but cannot move the robot arm"
 
-        # Perform simulation step of the environment
+        # Perform step of the brain simulation
+        action, neuron_states = brain.step(ob)
+
+        if j <= frames_observation + frames_memory:
+            action = np.zeros(output_size)
+
+        # Perform step of the environment simulation
         ob, rew, done, info = env.step(action)
 
-        fitness_current += rew
+        if j >= frames_observation:
+            indices = [4, 5, 8, 9, 10]
+            phase = "Memory phase (frames 20-39) - Brain neither gets input signals for the position of the red object nor can move the robot arm"
+            for index in indices:
+                ob[index] = 0.0
+
+        if j >= frames_observation + frames_memory:
+            fitness_current += rew
+            phase = "Action phase (frames 40-89) - Brain gets no input signals for the position of the red object but can move the robot arm"
+
+        print("Frame: " + str(j))
+        print(phase)
+        print("Inputs: " + str(ob.T))
+        print("Neuron states: " + str(neuron_states.T))
+        print("Outputs: " + str(action.T))
+        print("-------------------------------------------------------------------------------------------------------------------------------");
 
         env.render()
+        j += 1
 
     print(fitness_current)
+    fitness_complete += fitness_current
+
+print("Fitness mean: " + str(fitness_complete/N))
 
 # Get statistics from log
 generations = [i for i in range(len(log))]
