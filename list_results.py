@@ -70,13 +70,9 @@ for simulation in read_simulations(args.dir):
         if key not in configuration_keys:
             configuration_keys.append(key)
 
-configuration_keys.remove("cppn_hidden_size1")
-configuration_keys.remove("cppn_hidden_size2")
-configuration_keys.remove("random_seed_for_environment")
-configuration_keys.remove("indirect_encoding")
-configuration_keys.remove("set_priciple_diagonal_elements_of_W_negative")
-configuration_keys.remove("use_biases")
-configuration_keys.remove("delta_t")
+#configuration_keys.remove("random_seed_for_environment")
+#configuration_keys.remove("use_biases")
+#configuration_keys.remove("delta_t")
 
 header = [key.replace('_',' ') for key in configuration_keys]
 header.extend(["maximum average", "maximum", "directory"])
