@@ -1,17 +1,17 @@
 {
-  "environment": "Reacher-v2",
+  "environment": ["Hopper-v2", "HalfCheetah-v2", "Walker2d-v2"],
   "neural_network_type": "CTRNN",
   "random_seed_for_environment": 0,
-  "number_neurons": [10, 20],
+  "number_neurons": [10, 20, 50],
   "delta_t": 0.05,
-  "optimize_state_boundaries": false,
+  "optimize_state_boundaries": [false, true],
   "clipping_range": 1.0,
   "optimize_y0": [false, true],
   "set_principle_diagonal_elements_of_W_negative": [false, true],
   "population_size": 200,
   "number_generations": 2500,
   "sigma": 1.0,
-  "number_fitness_runs": 50,
+  "number_fitness_runs": 1,
   "number_neurons_layer1": [16, 32, 64],
   "use_biases": [false, true]
 }
