@@ -103,6 +103,9 @@ if __name__ == "__main__":
     pop, log = algorithms.eaGenerateUpdate(toolbox, ngen=configuration_data["number_generations"],
                                            stats=stats, halloffame=hof)
 
+    # Save elapsed time to config file
+    configuration_data['elapsed_time'] = time.time() - startTime
+
     # print elapsed time
     print("Time elapsed: %s" % (time.time() - startTime))
 
