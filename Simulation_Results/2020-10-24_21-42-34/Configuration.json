@@ -1,0 +1,1 @@
+{"environment": "Hopper-v2", "neural_network_type": "CTRNN", "random_seed_for_environment": 0, "population_size": 100, "number_generations": 2500, "sigma": 2.0, "number_fitness_runs": 1, "number_neurons": 5, "delta_t": 0.05, "optimize_state_boundaries": true, "optimize_y0": false, "set_principle_diagonal_elements_of_W_negative": false, "elapsed_time": 2495.2912793159485}
