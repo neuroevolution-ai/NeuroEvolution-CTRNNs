@@ -1,7 +1,7 @@
 {
   "environment": ["Hopper-v2", "HalfCheetah-v2", "Walker2d-v2"],
   "neural_network_type": "CTRNN",
-  "random_seed_for_environment": 0,
+  "random_seed_for_environment": -1,
   "delta_t": 0.05,
   "number_generations": 2500,
   "population_size": [100, 200, 500],
