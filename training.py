@@ -2,6 +2,7 @@ import subprocess
 import json
 import random
 import sys
+import os
 
 optimization_configuration_keys = ["environment",
                                    "neural_network_type",
@@ -25,6 +26,9 @@ with open('Stop_Optimization.json', 'w') as outfile:
     json.dump({"stop_optimization": False}, outfile)
 
 stop_optimization = False
+
+if os.path.exists("episode-times.txt"):
+    os.remove("episode-times.txt")
 
 print("Optimization started")
 
@@ -71,6 +75,8 @@ while not stop_optimization:
         d = json.load(readfile)
         stop_optimization = d["stop_optimization"]
 
-    subprocess.run(["python", "-m", "scoop", "CTRNN_ReinforcementLearning_CMA-ES.py"])
+    subprocess.run(["python", "-m", "scoop", "-n", "4", "CTRNN_ReinforcementLearning_CMA-ES.py"])
+
+    stop_optimization = True
 
 print("Optimization finished")

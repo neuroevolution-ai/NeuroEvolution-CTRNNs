@@ -41,7 +41,7 @@ def evalFitness(individual):
             action = brain.step(ob)
 
             # Perform step of the environment simulation
-            ob, rew, done, info = env.step(action)
+            ob, rew, done, info = env.step(np.zeros(8))
 
             fitness_current += rew
 

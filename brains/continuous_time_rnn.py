@@ -1,4 +1,5 @@
 import numpy as np
+import time
 
 
 class ContinuousTimeRNN:
@@ -55,6 +56,7 @@ class ContinuousTimeRNN:
                 self.W[j][j] = -abs(self.W[j][j])
 
     def step(self, ob):
+        time_measurement_s = time.time()
 
         u = ob[:, np.newaxis]
 
@@ -69,6 +71,11 @@ class ContinuousTimeRNN:
 
         # Calculate outputs
         o = np.tanh(np.dot(self.y.T, self.T))
+
+        time_measurement_e = time.time() - time_measurement_s
+
+        with open("episode-times.txt", "a") as file:
+            file.write(str(time_measurement_e) + "\n")
 
         return o[0]
 
