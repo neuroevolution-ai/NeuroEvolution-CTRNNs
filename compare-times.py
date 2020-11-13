@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-old_repo_values = np.loadtxt("/home/pdeubel/PycharmProjects/NeuroEvolution-CTRNNs/episode-times.txt")
-new_repo_values = np.loadtxt("/home/pdeubel/PycharmProjects/NeuroEvolution-CTRNN_new/episode_times.txt")
+old_repo_values = np.loadtxt("episode-times.txt")
+new_repo_values = np.loadtxt("../NeuroEvolution-CTRNN_new/episode_times.txt")
 
 # old_repo_values = old_repo_values[2500:]
 # new_repo_values = new_repo_values[2500:]
