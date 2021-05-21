@@ -26,7 +26,7 @@ def evalFitness(individual):
 
     for i in range(number_fitness_runs):
 
-        if configuration_data["random_seed_for_environment"] is not -1:
+        if configuration_data["random_seed_for_environment"] != -1:
             env.seed(configuration_data["random_seed_for_environment"]+i)
 
         ob = env.reset()
@@ -63,7 +63,7 @@ else:
 env = gym.make(configuration_data["environment"])
 
 # Set random seed for gym environment
-if configuration_data["random_seed_for_environment"] is not -1:
+if configuration_data["random_seed_for_environment"] != -1:
     env.seed(configuration_data["random_seed_for_environment"])
 
 # Get individual size
