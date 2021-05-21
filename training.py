@@ -3,7 +3,8 @@ import json
 import random
 import sys
 
-optimization_configuration_keys = ["environment",
+optimization_configuration_keys = ["experiment_id",
+                                   "environment",
                                    "neural_network_type",
                                    "random_seed_for_environment",
                                    "population_size",

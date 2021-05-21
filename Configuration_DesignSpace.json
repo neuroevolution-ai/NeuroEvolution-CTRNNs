@@ -1,4 +1,5 @@
 {
+  "experiment_id": 1,
   "environment": ["Hopper-v2", "HalfCheetah-v2", "Walker2d-v2"],
   "neural_network_type": "CTRNN",
   "random_seed_for_environment": -1,
