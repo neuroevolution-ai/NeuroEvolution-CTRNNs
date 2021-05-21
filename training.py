@@ -66,7 +66,7 @@ while not stop_optimization:
         configuration_out["number_neurons_layer2"] = round(configuration_out["number_neurons_layer1"] / 2)
 
     with open('Configuration.json', 'w') as outfile:
-        json.dump(configuration_out, outfile)
+        json.dump(configuration_out, outfile, ensure_ascii=False, indent=4)
 
     with open("Stop_Optimization.json", "r") as readfile:
         d = json.load(readfile)
