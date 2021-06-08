@@ -292,14 +292,12 @@ for simulation in read_simulations(args.dir):
     data.append(gather_info_for_csv(simulation, configuration_keys))
 
 experiments_dataframe = pd.DataFrame(data)
-experiments_dataframe = experiments_dataframe[experiments_dataframe["experiment_id"] == 1]
 
 dir_path = "spreadsheets"
 os.makedirs(dir_path, exist_ok=True)
 
-generate_ctrnn_pivot_table(_dir_path=dir_path, experiment_data=experiments_dataframe)
+# Print to csv
+experiments_dataframe.to_csv(os.path.join(dir_path, "output.csv"))
 
-with open(args.csv, 'w') as output_file:
-    dict_writer = csv.DictWriter(output_file, header)
-    dict_writer.writeheader()
-    dict_writer.writerows(data)
+experiments_dataframe = experiments_dataframe[experiments_dataframe["experiment_id"] == 1]
+generate_ctrnn_pivot_table(_dir_path=dir_path, experiment_data=experiments_dataframe)
