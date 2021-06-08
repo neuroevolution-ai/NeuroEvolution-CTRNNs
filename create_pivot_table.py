@@ -9,6 +9,24 @@ def apply_global_filters(data: pd.DataFrame) -> pd.DataFrame:
     return filtered_data
 
 
+def round_pivot_table(pivot_table: pd.DataFrame, environments: list):
+    # Integers look better in the paper therefore we first round and then cast to remove trailing zeros (except for
+    # the average time)
+    for env in environments:
+        pivot_table[env] = pivot_table[env].round({"maximum_average_mean": 0,
+                                                   "maximum_average_amax": 0,
+                                                   "maximum_average_len": 0,
+                                                   "elapsed_time_mean": 1})
+
+        # TODO this will for some reason not work
+        # pivot_table[env] = pivot_table[env].astype({"maximum_average_mean": np.int32,
+        #                                             "maximum_average_amax": np.int32,
+        #                                             "maximum_average_len": np.int32,
+        #                                             "elapsed_time_mean": np.float32})
+
+    return pivot_table
+
+
 def create_pivot_table_row(data: pd.DataFrame, row_property: str, environments: list,
                            order_of_columns: list) -> pd.DataFrame:
     per_env_pivot_tables = []
@@ -27,8 +45,7 @@ def create_pivot_table_row(data: pd.DataFrame, row_property: str, environments: 
         env_pivot_table = env_pivot_table.reindex(
             columns=order_of_columns)
 
-        # Integers look better in the paper
-        env_pivot_table = env_pivot_table.round().astype(np.int32)
+        env_pivot_table["elapsed_time_mean"] = env_pivot_table["elapsed_time_mean"] / 3600
 
         per_env_pivot_tables.append(env_pivot_table)
 
@@ -54,7 +71,6 @@ def add_total_row(pivot_table: pd.DataFrame, environments: list, order_of_column
     total_row_values = pd.concat(total_row).values
 
     pivot_table.loc["Total", :] = total_row_values
-    pivot_table = pivot_table.astype(np.int32)
 
     return pivot_table
 
@@ -83,6 +99,8 @@ def main():
     pivot_table = pd.concat(rows, keys=row_properties, axis=0)
 
     pivot_table = add_total_row(pivot_table, environments, column_order, total_row_functions)
+
+    pivot_table = round_pivot_table(pivot_table, environments)
 
     pivot_table.to_latex("spreadsheets/pivot_table.tex")
 
