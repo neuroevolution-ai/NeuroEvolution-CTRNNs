@@ -9,7 +9,8 @@ def apply_global_filters(data: pd.DataFrame) -> pd.DataFrame:
     return filtered_data
 
 
-def create_pivot_table_row(data: pd.DataFrame, row_property: str, environments: list) -> pd.DataFrame:
+def create_pivot_table_row(data: pd.DataFrame, row_property: str, environments: list,
+                           order_of_columns: list) -> pd.DataFrame:
     per_env_pivot_tables = []
 
     for env in environments:
@@ -24,14 +25,38 @@ def create_pivot_table_row(data: pd.DataFrame, row_property: str, environments: 
 
         # Now explicitly reorder the columns to be sure that they are in correct order
         env_pivot_table = env_pivot_table.reindex(
-            columns=["maximum_average_mean", "maximum_average_amax", "maximum_average_len", "elapsed_time_mean"])
+            columns=order_of_columns)
+
+        # Integers look better in the paper
+        env_pivot_table = env_pivot_table.round().astype(np.int32)
 
         per_env_pivot_tables.append(env_pivot_table)
 
     # Concatenate the individual pivot tables horizontally, i.e. this will be one row in the final pivot table
-    pivot_table_row = pd.concat(per_env_pivot_tables, axis=1)
+    pivot_table_row = pd.concat(per_env_pivot_tables, keys=environments, axis=1)
 
     return pivot_table_row
+
+
+def add_total_row(pivot_table: pd.DataFrame, environments: list, order_of_columns: list,
+                  total_row_functions: list) -> pd.DataFrame:
+    # This simply says apply this function to that column, i.e. apply max to the column where we list max values
+    # because we want the maximum reward over all the rows in the pivot table
+    aggregate_functions = {col: col_fun for (col, col_fun) in zip(order_of_columns, total_row_functions)}
+
+    total_row = []
+
+    for env in environments:
+        per_env_data = pivot_table[env]
+
+        total_row.append(per_env_data.agg(aggregate_functions))
+
+    total_row_values = pd.concat(total_row).values
+
+    pivot_table.loc["Total", :] = total_row_values
+    pivot_table = pivot_table.astype(np.int32)
+
+    return pivot_table
 
 
 def main():
@@ -42,16 +67,22 @@ def main():
     environments = ["Hopper-v2", "HalfCheetah-v2", "Walker2d-v2"]
     row_properties = ["population_size", "number_neurons", "clipping_range", "optimize_y0",
                       "set_principle_diagonal_elements_of_W_negative", "sigma"]
+    column_order = ["maximum_average_mean", "maximum_average_amax", "maximum_average_len", "elapsed_time_mean"]
+    # This has to match column_order, as these functions will be used on the columns to calculate the total row values
+    total_row_functions = [np.mean, np.max, len, np.mean]
 
     rows = []
 
     for row_prop in row_properties:
         rows.append(create_pivot_table_row(globally_filtered_data,
                                            row_property=row_prop,
-                                           environments=environments))
+                                           environments=environments,
+                                           order_of_columns=column_order))
 
     # Create the overall pivot table
     pivot_table = pd.concat(rows, keys=row_properties, axis=0)
+
+    pivot_table = add_total_row(pivot_table, environments, column_order, total_row_functions)
 
     pivot_table.to_latex("spreadsheets/pivot_table.tex")
 
