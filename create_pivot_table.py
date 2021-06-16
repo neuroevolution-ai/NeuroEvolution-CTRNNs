@@ -103,6 +103,7 @@ def main():
     pivot_table = round_pivot_table(pivot_table, environments)
 
     pivot_table.to_latex("spreadsheets/pivot_table.tex")
+    pivot_table.to_csv("spreadsheets/pivot_table.csv")
 
 
 if __name__ == "__main__":
